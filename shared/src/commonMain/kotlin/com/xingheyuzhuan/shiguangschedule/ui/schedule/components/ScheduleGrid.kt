@@ -1,6 +1,11 @@
 // Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.schedule.components
 
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.scrollBy
@@ -21,6 +26,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
@@ -45,8 +53,11 @@ fun ScheduleGrid(
     style: ScheduleGridStyleComposed,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier.fillMaxSize()) {
         val density = LocalDensity.current
+        val horizontalScroll = rememberScrollState()
+        val minimumDayWidth = (if (viewState.showWeekends) 60.dp else 56.dp) * density.fontScale.coerceAtLeast(1f)
+        val contentWidth = maxOf(maxWidth, minimumDayWidth * (if (viewState.showWeekends) 7 else 5) + style.timeColumnWidth + 24.dp)
 
         LaunchedEffect(viewState.mergedCourses) {
             state.resetAllStates()
@@ -64,7 +75,9 @@ fun ScheduleGrid(
         val maxGridSections = if (is24HourMode) 24 else viewState.timeSlots.size
 
         val totalGridHeight = style.sectionHeight * maxGridSections
-        val gridLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        val gridLineColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.22f)
+        val columnColor = MaterialTheme.colorScheme.surfaceContainerLow
+        val todayColumnColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = .16f)
         val strokeWidthPx = 1f
 
         val singleSchedulables = remember(viewState.mergedCourses, viewState.firstDayOfWeek, viewState.showWeekends) {
@@ -169,7 +182,7 @@ fun ScheduleGrid(
             }
         }
 
-        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().horizontalScroll(horizontalScroll).width(contentWidth).padding(horizontal = 12.dp)) {
             DayHeader(style, displayDays, viewState.dates, viewState.currentYear, viewState.currentWeek, viewState.todayIndex, gridLineColor, pageTextColor, pageSubTextColor, strokeWidthPx)
 
             Row(
@@ -200,15 +213,13 @@ fun ScheduleGrid(
                                     .zIndex(if (isExpanded) 2f else 0f)
                                     .then(
                                         if (!isExpanded) {
-                                            Modifier.pointerInput(item) {
-                                                detectTapGestures(
-                                                    onTap = { actions.onCourseBlockClicked(item.parentBlock) },
-                                                    onLongPress = {
-                                                        state.expandedItem = item
-                                                        actions.onHoldStateChanged(true)
-                                                    }
-                                                )
-                                            }
+                                            Modifier.semantics(mergeDescendants = true) {}.combinedClickable(
+                                                onClick = { actions.onCourseBlockClicked(item.parentBlock) },
+                                                onLongClick = {
+                                                    state.expandedItem = item
+                                                    actions.onHoldStateChanged(true)
+                                                }
+                                            )
                                         } else {
                                             Modifier.pointerInput(item) {
                                                 detectTapGestures(onTap = { state.expandedItem = null; actions.onHoldStateChanged(false) })
@@ -363,15 +374,22 @@ fun ScheduleGrid(
                         .height(totalGridHeight).weight(1f)
                         .onSizeChanged { state.gridWidthPx = it.width.toFloat() }
                         .drawBehind {
-                            if (style.hideGridLines) return@drawBehind
                             val cellWidth = size.width / displayDaysCount
-                            for (i in 1..displayDaysCount) {
-                                val x = i * cellWidth
-                                drawLine(gridLineColor, Offset(x, 0f), Offset(x, size.height), strokeWidth = strokeWidthPx)
+                            val gutter = 3.dp.toPx()
+                            for (i in 0 until displayDaysCount) {
+                                drawRoundRect(if (i == viewState.todayIndex) todayColumnColor else columnColor,
+                                    topLeft = Offset(i * cellWidth + gutter, 0f),
+                                    size = Size((cellWidth - gutter * 2).coerceAtLeast(0f), size.height),
+                                    cornerRadius = CornerRadius(16.dp.toPx()))
                             }
-                            for (i in 1..maxGridSections) {
-                                val y = i * sectionHeightPx
-                                drawLine(gridLineColor, Offset(0f, y), Offset(size.width, y), strokeWidth = strokeWidthPx)
+                            if (!style.hideGridLines) {
+                                for (i in 1 until maxGridSections) {
+                                    val y = i * sectionHeightPx
+                                    for (day in 0 until displayDaysCount) {
+                                        drawLine(gridLineColor, Offset(day * cellWidth + 8.dp.toPx(), y),
+                                            Offset((day + 1) * cellWidth - 8.dp.toPx(), y), strokeWidthPx)
+                                    }
+                                }
                             }
                         }
                         .pointerInput(displayDaysCount, sectionHeightPx, viewState.firstDayOfWeek, maxGridSections, is24HourMode, state.expandedItem) {

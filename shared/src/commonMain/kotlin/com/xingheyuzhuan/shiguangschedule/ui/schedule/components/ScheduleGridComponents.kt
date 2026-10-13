@@ -159,115 +159,33 @@ fun rememberScheduleGridState(
 @Composable
 fun DayHeader(
     style: ScheduleGridStyleComposed,
-    displayDays: List<String>,
-    dates: List<String>,
-    currentYear: String,
-    currentWeek: String?,
-    todayIndex: Int,
-    lineColor: Color,
-    textColor: Color,
-    subTextColor: Color,
-    strokeWidthPx: Float
+    displayDays: List<String>, dates: List<String>, currentYear: String,
+    currentWeek: String?, todayIndex: Int, lineColor: Color,
+    textColor: Color, subTextColor: Color, strokeWidthPx: Float
 ) {
-    BoxWithConstraints(Modifier.fillMaxWidth().height(style.dayHeaderHeight)) {
-        val shouldShowDate = !style.hideDateUnderDay && maxHeight >= 42.dp
-
-        Row(Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier
-                    .width(style.timeColumnWidth)
-                    .fillMaxHeight()
-                    .drawBehind {
-                        if (!style.hideGridLines) {
-                            drawLine(lineColor, Offset(size.width, 0f), Offset(size.width, size.height), strokeWidthPx)
-                            drawLine(lineColor, Offset(0f, size.height), Offset(size.width, size.height), strokeWidthPx)
-                        }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+    val colors = MaterialTheme.colorScheme
+    Row(Modifier.fillMaxWidth().height(style.dayHeaderHeight.coerceAtLeast(60.dp)),
+        verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.width(style.timeColumnWidth), horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(currentYear, style = MaterialTheme.typography.labelSmall, color = subTextColor)
+            Text("节次", style = MaterialTheme.typography.labelSmall, color = subTextColor)
+        }
+        displayDays.forEachIndexed { index, day ->
+            val selected = index == todayIndex
+            Box(Modifier.weight(1f).padding(horizontal = 3.dp, vertical = 4.dp), contentAlignment = Alignment.Center) {
+                androidx.compose.material3.Surface(
+                    shape = CircleShape,
+                    color = if (selected) colors.primary else colors.surfaceContainer,
+                    contentColor = if (selected) colors.onPrimary else textColor,
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Text(
-                        text = currentYear,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = subTextColor,
-                        style = TextStyle.Default
-                    )
-
-                    if (!currentWeek.isNullOrEmpty()) {
-                        Spacer(modifier = Modifier.height(1.dp))
-                        Text(
-                            text = currentWeek,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = subTextColor,
-                            style = TextStyle.Default
-                        )
-                    }
-                }
-            }
-
-            val displayDaysCount = displayDays.size
-
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .drawBehind {
-                        if (!style.hideGridLines) {
-                            val cellWidth = size.width / displayDaysCount
-                            for (i in 1..displayDaysCount) {
-                                val x = i * cellWidth
-                                drawLine(lineColor, Offset(x, 0f), Offset(x, size.height), strokeWidth = strokeWidthPx)
-                            }
-                            drawLine(lineColor, Offset(0f, size.height), Offset(size.width, size.height), strokeWidthPx)
-                        }
-                    }
-            ) {
-                displayDays.forEachIndexed { index, day ->
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .padding(horizontal = 3.dp, vertical = 4.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(if (index == todayIndex) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerLow),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .padding(vertical = 1.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = day,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (index == todayIndex) MaterialTheme.colorScheme.onPrimary else textColor,
-                                maxLines = 1,
-                                style = TextStyle(
-                                    lineHeight = 16.sp
-                                )
-                            )
-
-                            if (shouldShowDate && dates.size > index) {
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = dates[index].substringAfter("-"),
-                                    fontSize = 11.sp,
-                                    color = if (index == todayIndex) MaterialTheme.colorScheme.onPrimary.copy(alpha = .85f) else subTextColor,
-                                    maxLines = 1,
-                                    style = TextStyle(
-                                        lineHeight = 12.sp
-                                    )
-                                )
-                            }
-                        }
+                    Column(Modifier.padding(vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically)) {
+                        Text(day, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                        if (!style.hideDateUnderDay) Text(dates.getOrNull(index).orEmpty(),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (selected) colors.onPrimary.copy(alpha = .82f) else subTextColor)
                     }
                 }
             }
@@ -275,9 +193,6 @@ fun DayHeader(
     }
 }
 
-/**
- * 课表左侧时间轴/节次轴组件
- */
 @Composable
 fun TimeColumn(
     style: ScheduleGridStyleComposed,
@@ -318,10 +233,7 @@ fun TimeColumn(
                     .background(if (isCurrentHourActive) MaterialTheme.colorScheme.primaryContainer.copy(0.4f) else Color.Transparent)
                     .drawBehind {
                         if (!style.hideGridLines) {
-                            drawLine(lineColor, Offset(size.width, 0f), Offset(size.width, size.height), strokeWidthPx)
-                            if (!is24HourMode) {
-                                drawLine(lineColor, Offset(0f, size.height), Offset(size.width, size.height), strokeWidthPx)
-                            }
+                            drawLine(lineColor, Offset(6.dp.toPx(), size.height), Offset(size.width - 6.dp.toPx(), size.height), strokeWidthPx)
                         }
                     },
                 contentAlignment = if (is24HourMode) Alignment.TopCenter else Alignment.Center
@@ -374,7 +286,7 @@ fun TimeColumn(
                                         TimeText(slot.endTime, subTextColor)
                                     }
                                     h >= 38.dp -> {
-                                        Text(text = "${slot.startTime}-${slot.endTime}", fontSize = 8.sp, color = subTextColor, maxLines = 1)
+                                        Text(text = "${slot.startTime}-${slot.endTime}", fontSize = 11.sp, color = subTextColor, maxLines = 1)
                                     }
                                 }
                             }

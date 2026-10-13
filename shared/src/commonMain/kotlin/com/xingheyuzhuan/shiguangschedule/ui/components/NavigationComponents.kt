@@ -3,6 +3,7 @@ package com.xingheyuzhuan.shiguangschedule.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -13,6 +14,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlin.math.roundToInt
 import androidx.compose.material3.*
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
@@ -23,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
@@ -34,11 +40,29 @@ import dev.chrisbanes.haze.*
 import org.jetbrains.compose.resources.vectorResource
 import shiguangschedule.shared.generated.resources.*
 
-val FloatingNavigationHeight = 84.dp
+val FloatingNavigationHeight = 96.dp
+
+fun mainTabIndex(destination: Destination): Int = when (destination) {
+    Destination.TodaySchedule -> 0
+    Destination.CourseSchedule -> 1
+    Destination.Hbmu -> 2
+    else -> -1
+}
+
+fun mainTabDirection(from: Destination, to: Destination): Int {
+    val first = mainTabIndex(from)
+    val second = mainTabIndex(to)
+    return mainTabDirection(first, second)
+}
+
+fun mainTabDirection(first: Int, second: Int): Int {
+    return if (first < 0 || second < 0) 0 else (second - first).compareTo(0)
+}
 
 private data class NavItemData(val label: String, val destination: Destination, val selectedIcon: ImageVector, val icon: ImageVector)
 
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun AdaptiveNavigationScaffold(
     currentDestination: Destination,
     onTabSelected: (Destination) -> Unit,
@@ -55,9 +79,11 @@ fun AdaptiveNavigationScaffold(
         NavItemData("我的", Destination.Hbmu, vectorResource(Res.drawable.account_circle_filled_24px), vectorResource(Res.drawable.account_circle_24px))
     )
     val layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfo())
-    val haze = remember { HazeState() }
+    val glass = rememberNavigationGlass()
     val colors = MaterialTheme.colorScheme
     val keyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    var lastRootIndex by remember { mutableIntStateOf(mainTabIndex(currentDestination).coerceAtLeast(0)) }
+    LaunchedEffect(currentDestination) { mainTabIndex(currentDestination).takeIf { it >= 0 }?.let { lastRootIndex = it } }
     Box(modifier.fillMaxSize()) {
         if (layoutType == NavigationSuiteType.NavigationRail) {
             Row(Modifier.fillMaxSize()) {
@@ -71,7 +97,7 @@ fun AdaptiveNavigationScaffold(
                 Box(Modifier.weight(1f)) { content(PaddingValues(0.dp)) }
             }
         } else {
-            Box(Modifier.fillMaxSize().hazeSource(haze)) { content(PaddingValues(0.dp)) }
+            Box(Modifier.fillMaxSize().then(glass.source)) { content(PaddingValues(0.dp)) }
             val density = LocalDensity.current
             val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             val travel = with(density) { (FloatingNavigationHeight + bottomInset).toPx() }
@@ -83,25 +109,54 @@ fun AdaptiveNavigationScaffold(
                     translationY = travel * fraction
                     alpha = 1f - fraction
                 }.navigationBarsPadding().padding(horizontal = 20.dp, vertical = 10.dp)) {
-                    val shape = RoundedCornerShape(32.dp)
-                    Row(Modifier.widthIn(max = 360.dp).fillMaxWidth().height(64.dp)
-                        .shadow(8.dp, shape, clip = false, ambientColor = colors.primary.copy(alpha = .1f), spotColor = colors.primary.copy(alpha = .1f))
-                        .clip(shape).hazeEffect(haze, style = HazeStyle(
-                            backgroundColor = colors.surface,
-                            tint = HazeTint(colors.surfaceContainer.copy(alpha = if (isTransparent) .5f else .78f)),
-                            blurRadius = 22.dp, noiseFactor = .02f,
-                            fallbackTint = HazeTint(colors.surfaceContainer.copy(alpha = .97f))))
-                        .border(1.dp, colors.outlineVariant.copy(alpha = .45f), shape)
-                        .padding(5.dp).selectableGroup(), verticalAlignment = Alignment.CenterVertically) {
-                        items.forEach { item ->
-                            val selected = currentDestination == item.destination
-                            val background by animateColorAsState(if (selected) colors.secondaryContainer else Color.Transparent)
-                            val foreground by animateColorAsState(if (selected) colors.onSecondaryContainer else colors.onSurfaceVariant)
-                            Column(Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(27.dp)).background(background)
-                                .selectable(selected, onClick = { if (!selected) onTabSelected(item.destination) }, role = Role.Tab),
-                                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically)) {
-                                Icon(if (selected) item.selectedIcon else item.icon, null, Modifier.size(22.dp), tint = foreground)
-                                Text(item.label, style = MaterialTheme.typography.labelSmall, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, color = foreground)
+                    val shape = CircleShape
+                    BoxWithConstraints(Modifier.widthIn(max = 400.dp).fillMaxWidth().height(76.dp)
+                        .shadow(12.dp, shape, clip = false, ambientColor = colors.onSurface.copy(alpha = .06f), spotColor = colors.onSurface.copy(alpha = .10f))
+                        .then(glass.surface(shape, colors.surfaceContainer))
+                        .border(1.dp, Brush.linearGradient(listOf(Color.White.copy(alpha = .65f), colors.outlineVariant.copy(alpha = .12f), Color.White.copy(alpha = .30f))), shape)
+                        .clip(shape)
+                        .padding(6.dp)) {
+                        val tabWidth = maxWidth / items.size
+                        val selectedIndex = mainTabIndex(currentDestination).takeIf { it >= 0 } ?: lastRootIndex
+                        var dragPosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
+                        var isDragging by remember { mutableStateOf(false) }
+                        val capsuleOffset by animateDpAsState(tabWidth * if (isDragging) dragPosition else selectedIndex.toFloat(),
+                            animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(), label = "navigationCapsule")
+                        Box(Modifier.offset(x = capsuleOffset).width(tabWidth).fillMaxHeight()
+                            .clip(CircleShape).background(colors.secondaryContainer.copy(alpha = .86f))
+                            .border(1.dp, colors.onSecondaryContainer.copy(alpha = .08f), CircleShape))
+                        NavigationBar(containerColor = Color.Transparent, tonalElevation = 0.dp,
+                            windowInsets = WindowInsets(0, 0, 0, 0), modifier = Modifier.fillMaxSize()
+                                .pointerInput(tabWidth, selectedIndex) {
+                                    val widthPx = tabWidth.toPx()
+                                    detectHorizontalDragGestures(
+                                        onDragStart = { isDragging = true; dragPosition = selectedIndex.toFloat() },
+                                        onDragCancel = { isDragging = false },
+                                        onDragEnd = {
+                                            isDragging = false
+                                            val target = dragPosition.roundToInt().coerceIn(0, items.lastIndex)
+                                            if (target != selectedIndex) onTabSelected(items[target].destination)
+                                        },
+                                        onHorizontalDrag = { change, delta ->
+                                            change.consume()
+                                            dragPosition = (dragPosition + delta / widthPx).coerceIn(0f, items.lastIndex.toFloat())
+                                        }
+                                    )
+                                }) {
+                            items.forEachIndexed { index, item ->
+                                val selected = selectedIndex == index
+                                NavigationBarItem(selected = selected,
+                                    onClick = { if (!selected) onTabSelected(item.destination) },
+                                    icon = { Icon(if (selected) item.selectedIcon else item.icon, null, Modifier.size(24.dp)) },
+                                    label = { Text(item.label, style = MaterialTheme.typography.labelMedium, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium) },
+                                    alwaysShowLabel = true,
+                                    colors = NavigationBarItemDefaults.colors(
+                                        selectedIconColor = colors.onSecondaryContainer,
+                                        selectedTextColor = colors.onSecondaryContainer,
+                                        unselectedIconColor = colors.onSurface,
+                                        unselectedTextColor = colors.onSurfaceVariant,
+                                        indicatorColor = Color.Transparent
+                                    ))
                             }
                         }
                     }

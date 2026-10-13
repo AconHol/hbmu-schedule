@@ -103,6 +103,7 @@ kotlin {
         }
 
         androidMain.dependencies {
+            implementation("io.github.kyant0:backdrop:1.0.6")
             implementation("com.microsoft.onnxruntime:onnxruntime-android:1.22.0")
             implementation(libs.androidx.sqlite.framework)
             implementation(libs.ktor.client.okhttp)

@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -59,12 +61,15 @@ fun CourseBlock(
         ?: MaterialTheme.colorScheme.secondaryContainer
 
     val currentAlpha = if (isFloating) 0.95f else style.courseBlockAlpha
-    val blockColor = (courseColorAdapted ?: fallbackColorAdapted).copy(alpha = currentAlpha)
-    val textColor = style.courseTextColor ?: if (blockColor.luminance() > .4f) Color(0xFF192B26) else Color(0xFFF2F5F0)
+    val accent = courseColorAdapted ?: fallbackColorAdapted
+    val blockColor = lerp(MaterialTheme.colorScheme.surfaceContainer, accent, .68f).copy(alpha = currentAlpha)
+    val textColor = style.courseTextColor ?: MaterialTheme.colorScheme.onSurface
+    val captionColor = style.courseTextColor ?: MaterialTheme.colorScheme.onSurfaceVariant
+    val railColor = MaterialTheme.colorScheme.primary.copy(alpha = .40f)
 
     // 字体大小
     val s13 = (12 * style.fontScale).sp
-    val s10 = (10 * style.fontScale).sp
+    val s10 = (11 * style.fontScale).sp
 
     // 核心分支逻辑：判断 24小时模式 与 节次模式 的时间文本渲染
     val customStartTime = course.customStartTime
@@ -96,7 +101,7 @@ fun CourseBlock(
     val borderColor = if (isFloating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
     val borderWidth = if (isFloating) 2.dp else 1.dp
     val borderAlpha = if (isFloating) 1.0f else style.courseBlockAlpha
-    val shape = RoundedCornerShape(style.courseBlockCornerRadius)
+    val shape = RoundedCornerShape(style.courseBlockCornerRadius.coerceAtMost(12.dp))
 
     val borderModifier = when (style.borderType) {
         BorderTypeProto.BORDER_TYPE_SOLID -> {
@@ -119,7 +124,7 @@ fun CourseBlock(
     }
 
     val horizontalAlignment = if (style.textAlignCenterHorizontal) Alignment.CenterHorizontally else Alignment.Start
-    val verticalArrangement = if (style.textAlignCenterVertical) Arrangement.Center else Arrangement.Top
+    val verticalArrangement = Arrangement.spacedBy(4.dp, if (style.textAlignCenterVertical) Alignment.CenterVertically else Alignment.Top)
     val textAlign = if (style.textAlignCenterHorizontal) TextAlign.Center else TextAlign.Start
 
     // 选中捏起时，增加三维物理阴影
@@ -129,7 +134,7 @@ fun CourseBlock(
         Modifier
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .then(floatingShadowModifier)
             .fillMaxSize()
@@ -137,11 +142,12 @@ fun CourseBlock(
             .clip(shape)
             .background(color = blockColor)
             .drawBehind {
-                drawRoundRect(textColor.copy(alpha = .22f), topLeft = Offset(3.dp.toPx(), 9.dp.toPx()),
+                drawRoundRect(railColor, topLeft = Offset(3.dp.toPx(), 9.dp.toPx()),
                     size = androidx.compose.ui.geometry.Size(2.dp.toPx(), (size.height - 18.dp.toPx()).coerceAtLeast(0f)),
                     cornerRadius = androidx.compose.ui.geometry.CornerRadius(1.dp.toPx()))
             }
     ) {
+        val blockHeight = maxHeight
         // 课程文字内容容器
         Column(
             modifier = Modifier.fillMaxSize().padding(start = style.courseBlockInnerPadding + 2.dp, end = style.courseBlockInnerPadding, top = style.courseBlockInnerPadding, bottom = style.courseBlockInnerPadding),
@@ -152,7 +158,7 @@ fun CourseBlock(
                 Text(
                     text = timeTextToShow,
                     fontSize = s10,
-                    color = textColor.copy(alpha = 0.8f),
+                    color = captionColor,
                     fontWeight = FontWeight.SemiBold,
                     textAlign = textAlign,
                     style = TextStyle(lineHeight = 1.em)
@@ -165,25 +171,21 @@ fun CourseBlock(
                 fontWeight = FontWeight.Bold,
                 color = textColor,
                 overflow = TextOverflow.Ellipsis,
-                maxLines = 4,
+                maxLines = if (blockHeight >= 110.dp) 4 else 2,
                 textAlign = textAlign,
                 modifier = Modifier.weight(1f, fill = false),
                 style = TextStyle(lineHeight = 1.2.em)
             )
 
-            if (!style.hideTeacher) {
-                val teacher = course.teacher
-                if (teacher.isNotBlank()) {
-                    Text(text = teacher, fontSize = s10, color = textColor.copy(alpha = .75f), textAlign = textAlign, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(lineHeight = 1.2.em))
-                }
+            if (!style.hideLocation && course.position.isNotBlank() && blockHeight >= 60.dp) {
+                Text(if (style.removeLocationAt) course.position else "@${course.position}", fontSize = s10, color = captionColor,
+                    maxLines = if (blockHeight >= 110.dp) 2 else 1, overflow = TextOverflow.Ellipsis, textAlign = textAlign,
+                    style = TextStyle(lineHeight = 1.25.em))
             }
-
-            if (!style.hideLocation) {
-                val position = course.position
-                if (position.isNotBlank()) {
-                    val prefix = if (style.removeLocationAt) "" else "· "
-                    Text(text = "$prefix$position", fontSize = s10, color = textColor, textAlign = textAlign, maxLines = 2, overflow = TextOverflow.Ellipsis, style = TextStyle(lineHeight = 1.2.em))
-                }
+            if (!style.hideTeacher && course.teacher.isNotBlank() && blockHeight >= 112.dp) {
+                Text(course.teacher, fontSize = s10, color = captionColor,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = textAlign,
+                    style = TextStyle(lineHeight = 1.25.em))
             }
         }
 

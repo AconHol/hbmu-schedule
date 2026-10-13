@@ -26,6 +26,7 @@ import shiguangschedule.shared.generated.resources.*
 import kotlin.time.Clock
 
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
     viewModel: TodayScheduleViewModel = koinViewModel(), hbmu: HbmuRepository = koinInject()) {
     val uiState by viewModel.uiState.collectAsState()
@@ -42,17 +43,17 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
         LazyColumn(Modifier.fillMaxSize().padding(padding), verticalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(bottom = 112.dp)) {
             item { HbmuBrandHeader("今日课表", "${today.month.ordinal + 1}月${today.day}日 · 星期${"一二三四五六日"[today.dayOfWeek.isoDayNumber - 1]}", { onNavigate(Destination.Settings) }) }
             item {
-                Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), shape = RoundedCornerShape(36.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)) {
+                Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), shape = MaterialTheme.shapes.extraLarge, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
                     Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(if (next != null && next.startTime != null && next.startTime!! <= time.toString().take(5)) "正在上课" else if (next != null) "下一节课" else "今日安排", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-                            Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = .14f), contentColor = MaterialTheme.colorScheme.onPrimary) {
+                            Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = .14f), contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
                                 Text(if (state != null && state.weekIndex > 0) "第 ${state.weekIndex} 周" else "HBMU", Modifier.padding(horizontal = 14.dp, vertical = 6.dp), style = MaterialTheme.typography.labelMedium)
                             }
                         }
                         Text(next?.course?.name ?: if (connection.lastSync == 0L) "连接你的课表" else if (state?.courses?.isNotEmpty() == true) "今天的课，已完成" else "今天，留点空白", style = MaterialTheme.typography.headlineMedium)
                         Text(if (next != null) "${next.startTime ?: "时间待设置"} — ${next.endTime ?: ""} · ${next.course.position.ifBlank { "教室待公布" }}" else if (connection.lastSync == 0L) "登录教务，自动同步整学期课程" else "今天的课程已经结束，或暂无排课", style = MaterialTheme.typography.bodyLarge)
-                        FilledTonalButton(onClick = { if (next != null) detail = next else onNavigate(if (connection.lastSync == 0L) Destination.Hbmu else Destination.CourseSchedule) }, modifier = Modifier.heightIn(min = 48.dp)) {
+                        Button(onClick = { if (next != null) detail = next else onNavigate(if (connection.lastSync == 0L) Destination.Hbmu else Destination.CourseSchedule) }, modifier = Modifier.heightIn(min = 48.dp), shapes = ButtonDefaults.shapes()) {
                             Text(if (next != null) "查看课程详情" else if (connection.lastSync == 0L) "连接 HBMU 教务" else "查看本周课表")
                             Spacer(Modifier.width(8.dp)); Icon(vectorResource(Res.drawable.chevron_right_24px), null)
                         }
@@ -61,10 +62,10 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
             }
             item {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    FilledTonalButton({ onNavigate(Destination.CourseSchedule) }, Modifier.weight(1f).heightIn(min = 52.dp)) {
+                    FilledTonalButton(onClick = { onNavigate(Destination.CourseSchedule) }, modifier = Modifier.weight(1f).heightIn(min = 52.dp), shapes = ButtonDefaults.shapes()) {
                         Icon(vectorResource(Res.drawable.view_week_24px), null); Spacer(Modifier.width(8.dp)); Text("本周课表")
                     }
-                    OutlinedButton({ if (!connection.signedIn) onNavigate(Destination.Hbmu) else scope.launch { hbmu.sync() } }, Modifier.weight(1f).heightIn(min = 52.dp), enabled = !connection.busy) {
+                    OutlinedButton(onClick = { if (!connection.signedIn) onNavigate(Destination.Hbmu) else scope.launch { hbmu.sync() } }, modifier = Modifier.weight(1f).heightIn(min = 52.dp), enabled = !connection.busy, shapes = ButtonDefaults.shapes()) {
                         Icon(vectorResource(Res.drawable.refresh_24px), null); Spacer(Modifier.width(8.dp)); Text(if (connection.busy) "同步中" else "同步课表")
                     }
                 }

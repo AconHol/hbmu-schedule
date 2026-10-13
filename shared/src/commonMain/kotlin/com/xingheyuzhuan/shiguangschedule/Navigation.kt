@@ -15,6 +15,7 @@ import kotlin.reflect.KClass
  */
 object ShiguangNavMetadata {
     object IsMainScreenKey : NavMetadataKey<Boolean>
+    object MainTabIndexKey : NavMetadataKey<Int>
 }
 
 /**

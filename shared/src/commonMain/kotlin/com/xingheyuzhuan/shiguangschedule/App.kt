@@ -2,6 +2,8 @@
 package com.xingheyuzhuan.shiguangschedule
 
 import androidx.compose.animation.core.tween
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -21,12 +23,15 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.metadata
+import androidx.navigation3.runtime.get
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.xingheyuzhuan.shiguangschedule.data.model.StartScreen
 import com.xingheyuzhuan.shiguangschedule.tool.ExternalFileManager
 import com.xingheyuzhuan.shiguangschedule.ui.components.AdaptiveNavigationScaffold
+import com.xingheyuzhuan.shiguangschedule.ui.components.mainTabDirection
+import com.xingheyuzhuan.shiguangschedule.ui.components.mainTabIndex
 import com.xingheyuzhuan.shiguangschedule.ui.schedule.WeeklyScheduleScreen
 import com.xingheyuzhuan.shiguangschedule.ui.schoolselection.list.AdapterSelectionScreen
 import com.xingheyuzhuan.shiguangschedule.ui.schoolselection.list.SchoolSelectionListScreen
@@ -85,6 +90,7 @@ fun App(scheduleOpenRequest: Int = 0) {
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun AppNavigation(startDestination: Destination, scheduleOpenRequest: Int = 0) {
     val backStack = rememberNavBackStack(
         configuration = navSavedStateConfig,
@@ -130,7 +136,8 @@ fun AppNavigation(startDestination: Destination, scheduleOpenRequest: Int = 0) {
         }
     }
 
-    val animSpec = tween<IntOffset>(300)
+    val animSpec = MaterialTheme.motionScheme.defaultSpatialSpec<IntOffset>()
+    val effectSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
 
     AdaptiveNavigationScaffold(
         currentDestination = currentDestination,
@@ -143,12 +150,28 @@ fun AppNavigation(startDestination: Destination, scheduleOpenRequest: Int = 0) {
             onBack = onBack,
             modifier = Modifier.fillMaxSize(),
             transitionSpec = {
-                slideInHorizontally(initialOffsetX = { it }, animationSpec = animSpec) togetherWith
-                        slideOutHorizontally(targetOffsetX = { -it / 3 }, animationSpec = animSpec) + fadeOut()
+                val from = initialState.entries.lastOrNull()?.metadata?.get(ShiguangNavMetadata.MainTabIndexKey) ?: -1
+                val to = targetState.entries.lastOrNull()?.metadata?.get(ShiguangNavMetadata.MainTabIndexKey) ?: -1
+                val direction = mainTabDirection(from, to)
+                if (direction != 0) {
+                    (slideInHorizontally(initialOffsetX = { direction * it / 8 }, animationSpec = animSpec) + fadeIn(effectSpec)) togetherWith
+                        (slideOutHorizontally(targetOffsetX = { -direction * it / 8 }, animationSpec = animSpec) + fadeOut(effectSpec))
+                } else {
+                    (slideInHorizontally(initialOffsetX = { it }, animationSpec = animSpec) + fadeIn(effectSpec)) togetherWith
+                        (slideOutHorizontally(targetOffsetX = { -it / 4 }, animationSpec = animSpec) + fadeOut(effectSpec))
+                }
             },
             popTransitionSpec = {
-                slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = animSpec) + fadeIn() togetherWith
+                val from = initialState.entries.lastOrNull()?.metadata?.get(ShiguangNavMetadata.MainTabIndexKey) ?: -1
+                val to = targetState.entries.lastOrNull()?.metadata?.get(ShiguangNavMetadata.MainTabIndexKey) ?: -1
+                val direction = mainTabDirection(from, to)
+                if (direction != 0) {
+                    (slideInHorizontally(initialOffsetX = { direction * it / 8 }, animationSpec = animSpec) + fadeIn(effectSpec)) togetherWith
+                        (slideOutHorizontally(targetOffsetX = { -direction * it / 8 }, animationSpec = animSpec) + fadeOut(effectSpec))
+                } else {
+                    (slideInHorizontally(initialOffsetX = { -it / 4 }, animationSpec = animSpec) + fadeIn(effectSpec)) togetherWith
                         slideOutHorizontally(targetOffsetX = { it }, animationSpec = animSpec)
+                }
             },
             predictivePopTransitionSpec = {
                 slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = animSpec) + fadeIn() togetherWith
@@ -165,6 +188,7 @@ fun AppNavigation(startDestination: Destination, scheduleOpenRequest: Int = 0) {
                 key = key,
                 metadata = metadata {
                     put(ShiguangNavMetadata.IsMainScreenKey, destination.isMainScreen)
+                    put(ShiguangNavMetadata.MainTabIndexKey, mainTabIndex(destination))
                 }
             ) {
                 Surface(modifier = Modifier.fillMaxSize()) {

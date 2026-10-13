@@ -31,6 +31,7 @@ import kotlin.time.Instant
 expect fun HbmuCaptchaImage(bytes: ByteArray, modifier: Modifier = Modifier)
 
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun HbmuBrandHeader(title: String, subtitle: String, onTools: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
@@ -39,7 +40,7 @@ fun HbmuBrandHeader(title: String, subtitle: String, onTools: () -> Unit) {
             Text(title, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
             Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        FilledTonalIconButton(onClick = onTools, modifier = Modifier.size(48.dp)) {
+        FilledTonalIconButton(onClick = onTools, modifier = Modifier.size(48.dp), shapes = IconButtonDefaults.shapes()) {
             Icon(vectorResource(Res.drawable.tune_24px), "工具与设置")
         }
     }
@@ -59,7 +60,6 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
     var termMenu by remember { mutableStateOf(false) }
     var showLogin by remember { mutableStateOf(!state.signedIn) }
     var showSignOut by remember { mutableStateOf(false) }
-    var showPrivacy by remember { mutableStateOf(false) }
     LaunchedEffect(state.signedIn) { showLogin = !state.signedIn }
     LaunchedEffect(state.captcha) { code = state.captcha?.recognized.orEmpty() }
 
@@ -97,9 +97,6 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                         }
                         if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                         if (state.signedIn && state.busy) Text(state.message, style = MaterialTheme.typography.bodySmall)
-                        TextButton(onClick = { showPrivacy = true }) {
-                            Text("学习用途 · 本地保存 · 隐私承诺")
-                        }
                     }
                 }
             }
@@ -141,8 +138,6 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                 Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                     Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Text("登录教务", style = MaterialTheme.typography.titleLarge)
-                        Text("非官方学习项目，请仅使用本人有权使用的账号与数据。开发者不收集你的个人信息。",
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         OutlinedTextField(account, { account = it.trim() }, label = { Text("学号") }, singleLine = true, enabled = !state.busy,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text), modifier = Modifier.fillMaxWidth())
                         OutlinedTextField(password, { password = it }, label = { Text("教务密码") }, singleLine = true, enabled = !state.busy,
@@ -218,10 +213,4 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
         text = { Text("本地课表会保留。退出后将停止自动登录与教务同步。") },
         confirmButton = { TextButton({ showSignOut = false; scope.launch { repository.signOut() } }) { Text("退出账号") } },
         dismissButton = { TextButton({ showSignOut = false }) { Text("取消") } })
-    if (showPrivacy) AlertDialog(
-        onDismissRequest = { showPrivacy = false },
-        title = { Text("学习用途与隐私承诺") },
-        text = { Text("本项目为个人开发学习与研究使用，非学校官方产品。请仅处理本人有权使用的数据，并遵守适用规则与必要授权。\n\n开发者绝不会私自盗取、收集、留存、出售或分享你的账号、密码、姓名、课表等个人信息。本应用没有开发者的数据收集服务器，不会将这些信息上传给开发者。账号与课表保存在你的设备；保持登录的信息在本机加密保存。\n\n你主动配置的备份、导出、分享或日历操作由你控制；系统备份由设备设置控制，登录凭据已排除在系统备份之外。联网服务仍受相应服务方的规则与隐私政策约束。\n\n学习用途声明不替代必要授权，也不免除依法应承担的责任。", modifier = Modifier.verticalScroll(rememberScrollState())) },
-        confirmButton = { TextButton(onClick = { showPrivacy = false }) { Text("知道了") } }
-    )
 }

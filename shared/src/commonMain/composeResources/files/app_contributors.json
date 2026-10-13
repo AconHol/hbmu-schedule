@@ -1,0 +1,54 @@
+{
+  "app_dev": [
+    {
+      "name": "AconHol",
+      "url": "https://github.com/AconHol",
+      "avatar": "",
+      "role": "课程表 · HBMU 版本开发维护"
+    }
+  ],
+  "jiaowu_adapter": [
+    {
+      "name": "XingHeYuZhuan",
+      "url": "https://github.com/XingHeYuZhuan",
+      "avatar": "",
+      "role": "拾光课程表 · 上游贡献者"
+    },
+    {
+      "name": "dezige131",
+      "url": "https://github.com/dezige131",
+      "avatar": "",
+      "role": "拾光课程表 · 上游贡献者"
+    },
+    {
+      "name": "axelpln",
+      "url": "https://github.com/axelpln",
+      "avatar": "",
+      "role": "拾光课程表 · 上游贡献者"
+    },
+    {
+      "name": "RealityVF",
+      "url": "https://github.com/RealityVF",
+      "avatar": "",
+      "role": "拾光课程表 · 上游贡献者"
+    },
+    {
+      "name": "StarVase",
+      "url": "https://github.com/StarVase",
+      "avatar": "",
+      "role": "拾光课程表 · 上游贡献者"
+    },
+    {
+      "name": "wykwey",
+      "url": "https://github.com/wykwey",
+      "avatar": "",
+      "role": "拾光课程表 · 上游贡献者"
+    },
+    {
+      "name": "dong-dong6",
+      "url": "https://github.com/dong-dong6",
+      "avatar": "",
+      "role": "拾光课程表 · 上游贡献者"
+    }
+  ]
+}

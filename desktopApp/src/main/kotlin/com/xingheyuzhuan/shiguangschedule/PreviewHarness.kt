@@ -43,7 +43,8 @@ fun main(args: Array<String>): Unit = runBlocking {
     }
     val output = File(System.getenv("HBMU_PREVIEW_OUTPUT") ?: "build/hbmu-preview").apply { mkdirs() }
     withContext(Dispatchers.Main) {
-        for ((name, destination) in listOf("today" to Destination.TodaySchedule, "week" to Destination.CourseSchedule, "academic" to Destination.Hbmu, "tools" to Destination.Settings)) {
+        for ((name, destination) in listOf("today" to Destination.TodaySchedule, "week" to Destination.CourseSchedule, "academic" to Destination.Hbmu, "tools" to Destination.Settings,
+            "contributors" to Destination.ContributionList)) {
             for (dark in listOf(false, true)) {
                 val scene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
                     ShiguangScheduleTheme(darkTheme = dark, dynamicColor = false) {
@@ -59,6 +60,27 @@ fun main(args: Array<String>): Unit = runBlocking {
                 scene.close()
             }
         }
+        // Exercise the actual navigation controls, including the reverse direction.
+        val navigationScene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
+            ShiguangScheduleTheme(darkTheme = false, dynamicColor = false) {
+                Surface(Modifier.fillMaxSize()) { AppNavigation(Destination.TodaySchedule) }
+            }
+        }
+        repeat(8) { navigationScene.render(System.nanoTime()).close(); delay(100) }
+        for ((name, x) in listOf("forward" to 360f, "backward" to 120f)) {
+            navigationScene.sendPointerEvent(PointerEventType.Press, Offset(x, 1500f))
+            navigationScene.sendPointerEvent(PointerEventType.Release, Offset(x, 1500f))
+            val animationStart = System.nanoTime()
+            repeat(28) { frame ->
+                // PNG encoding must not advance the animation clock and skip intermediate frames.
+                navigationScene.render(animationStart + frame * 20_000_000L).use { rendered -> rendered.encodeToData(EncodedImageFormat.PNG)?.use { data ->
+                    File(output, "navigation-$name-${frame.toString().padStart(2, '0')}.png").writeBytes(data.bytes)
+                } }
+                delay(1)
+            }
+            repeat(4) { navigationScene.render(System.nanoTime()).close(); delay(100) }
+        }
+        navigationScene.close()
         val hbmu = koin.get<HbmuRepository>()
         @Suppress("UNCHECKED_CAST")
         val state = HbmuRepository::class.java.getDeclaredField("state").apply { isAccessible = true }.get(hbmu) as MutableStateFlow<HbmuState>

@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): offline contributor data, attribution and grouped lists.
 package com.xingheyuzhuan.shiguangschedule.ui.settings.contribution
 
 import androidx.compose.foundation.clickable
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -25,6 +28,9 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -120,8 +126,8 @@ fun ContributionScreen(
 
                     is ContributionUiState.Success -> {
                         val listToShow = when (selectedTabIndex) {
-                            0 -> state.data.jiaowuadapter
-                            1 -> state.data.appDev
+                            0 -> state.data.appDev
+                            1 -> state.data.jiaowuadapter
                             else -> emptyList()
                         }
                         ContributorListContent(
@@ -147,8 +153,8 @@ fun ContributionTabs(
     onTabSelected: (Int) -> Unit
 ) {
     val tabs = listOf(
-        stringResource(Res.string.tab_adapter_development),
-        stringResource(Res.string.tab_app_development)
+        "本项目",
+        "上游贡献者"
     )
 
     PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
@@ -187,11 +193,13 @@ fun ContributorListContent(
         return
     }
 
-    LazyColumn(contentPadding = PaddingValues(vertical = 8.dp)) {
-        items(list, key = { it.url }) { contributor ->
+    LazyColumn(contentPadding = PaddingValues(vertical = 16.dp)) {
+        itemsIndexed(list, key = { _, contributor -> contributor.url }) { index, contributor ->
             ContributorCard(
                 contributor = contributor,
-                onContributorClick = onContributorClick
+                onContributorClick = onContributorClick,
+                first = index == 0,
+                last = index == list.lastIndex
             )
         }
     }
@@ -204,13 +212,15 @@ fun ContributorListContent(
 @Composable
 fun ContributorCard(
     contributor: ContributionList.Contributor,
-    onContributorClick: (String) -> Unit
+    onContributorClick: (String) -> Unit,
+    first: Boolean = false,
+    last: Boolean = false
 ) {
     val a11yAvatar = stringResource(Res.string.a11y_contributor_avatar, contributor.name)
     val labelGithub = stringResource(Res.string.label_github)
 
     val avatarBytes by produceState<ByteArray?>(initialValue = null, contributor.avatar) {
-        value = try {
+        value = if (contributor.avatar.isBlank()) null else try {
             Res.readBytes("files/contributors_data/${contributor.avatar}")
         } catch (_: Exception) {
             null
@@ -218,29 +228,37 @@ fun ContributorCard(
     }
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { onContributorClick(contributor.url) }
+        onClick = { onContributorClick(contributor.url) },
+        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+        shape = RoundedCornerShape(topStart = if (first) 24.dp else 4.dp,
+            topEnd = if (first) 24.dp else 4.dp,
+            bottomStart = if (last) 24.dp else 4.dp, bottomEnd = if (last) 24.dp else 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AsyncImage(
+            if (avatarBytes != null) AsyncImage(
                 model = avatarBytes,
                 contentDescription = a11yAvatar,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-            )
+            ) else Surface(Modifier.size(48.dp), shape = CircleShape,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(contributor.name.take(1).uppercase(), style = MaterialTheme.typography.titleLarge)
+                }
+            }
             Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = contributor.name,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.weight(1f))
+            Column(Modifier.weight(1f)) {
+                Text(contributor.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                if (contributor.role.isNotBlank()) Text(contributor.role,
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             Text(
                 text = labelGithub,
                 style = MaterialTheme.typography.labelSmall,

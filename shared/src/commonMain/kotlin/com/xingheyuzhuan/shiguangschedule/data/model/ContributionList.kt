@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): local avatar fallback and contributor role.
 package com.xingheyuzhuan.shiguangschedule.data.model
 
 import kotlinx.serialization.SerialName
@@ -27,6 +28,7 @@ data class ContributionList(
         val url: String,
 
         @SerialName("avatar")
-        val avatar: String
+        val avatar: String = "",
+        val role: String = ""
     )
 }

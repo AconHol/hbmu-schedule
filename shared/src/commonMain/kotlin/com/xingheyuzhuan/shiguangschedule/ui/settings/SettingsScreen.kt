@@ -120,6 +120,8 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showPrivacy by remember { mutableStateOf(false) }
+    if (showPrivacy) LearningPrivacyDialog(onDismiss = { showPrivacy = false })
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
@@ -201,6 +203,17 @@ fun SettingsScreen(
                 }
                 item {
                     AdvancedSettingsSection(onNavigate = onNavigate)
+                }
+                item {
+                    Card(onClick = { showPrivacy = true }, modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+                        androidx.compose.material3.ListItem(
+                            headlineContent = { Text("用途与隐私") },
+                            supportingContent = { Text("阅读学习用途声明与隐私承诺") },
+                            trailingContent = { Icon(vectorResource(Res.drawable.chevron_right_24px), null) },
+                            colors = androidx.compose.material3.ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                        )
+                    }
                 }
             }
 

@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): ship an offline contributor snapshot.
 package com.xingheyuzhuan.shiguangschedule.data.repository
 
 import com.xingheyuzhuan.shiguangschedule.data.model.ContributionList
@@ -25,7 +26,7 @@ class ContributionRepository {
     suspend fun getContributions(): ContributionList = withContext(Dispatchers.IO) {
         try {
             // 直接跨平台读取打包进去的静态资源文件
-            val bytes = Res.readBytes("files/contributors_data/contributors.json")
+            val bytes = Res.readBytes("files/app_contributors.json")
             val jsonString = bytes.decodeToString()
             return@withContext json.decodeFromString<ContributionList>(jsonString)
         } catch (e: Exception) {
