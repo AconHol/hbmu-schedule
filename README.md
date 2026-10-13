@@ -1,11 +1,11 @@
 <!-- Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained. -->
 # 课程表 · 学习项目
 
-面向 HBMU 课表场景的个人 Android 开发学习与研究项目，基于 [拾光课程表 v2.1.0](https://github.com/ShiGuangSchedule/shiguangschedule/releases/tag/v2.1.0) 改造。保留完整上游 Git 历史、作者署名与 Apache 2.0 许可证，由 AconHol 独立维护。
+面向 HBMU 课表场景的个人 Android 开发学习与研究项目，基于 [拾光课程表 v2.1.0](https://github.com/ShiGuangSchedule/shiguangschedule/releases/tag/v2.1.0) 改造。保留完整上游 Git 历史、作者署名与 Apache 2.0 许可证。
 
 > **学习用途与非官方声明**
 >
-> 本项目的发布目的仅为软件开发学习、技术交流与研究，不代表学校或系统运营方，不是学校官方产品，也未获得学校的官方背书。请仅处理本人有权使用的数据，并遵守适用规则和必要授权。学习用途声明不替代授权，也不免除依法应承担的责任。
+> 本项目的发布目的仅为软件开发学习、技术交流与研究，不代表学校或系统运营方，不是学校官方产品，也未获得学校的官方背书。请仅处理本人有权使用的数据，并遵守适用规则和必要授权。
 >
 > **开发者承诺绝不会私自盗取、收集、留存、出售或分享用户的账号、密码、姓名、课表等个人信息。应用没有开发者的数据收集服务器，不会将这些信息上传给开发者。** 账号与课表保存在用户设备；用户主动配置的备份、导出和分享由用户自己控制。
 
