@@ -34,6 +34,10 @@
 # 网络库 (Ktor)
 -dontwarn io.ktor.**
 
+# ONNX Runtime calls these Java classes and enum members from native JNI code.
+# Its Android AAR does not include consumer keep rules.
+-keep class ai.onnxruntime.** { *; }
+
 # 日志与极致优化
 -keep class org.slf4j.impl.** { *; }
 
