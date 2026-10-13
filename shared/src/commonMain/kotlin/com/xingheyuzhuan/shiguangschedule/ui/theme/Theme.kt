@@ -2,7 +2,11 @@ package com.xingheyuzhuan.shiguangschedule.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MotionScheme
+import androidx.compose.material3.Shapes
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -48,6 +52,7 @@ fun ShiguangScheduleTheme(
  * 核心主题实现函数（跨平台通用）
  */
 @Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 fun ShiguangScheduleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
@@ -70,10 +75,15 @@ fun ShiguangScheduleTheme(
         themeMode = themeMode
     )
 
-    MaterialTheme(
+    MaterialExpressiveTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        shapes = Shapes(
+            extraSmall = RoundedCornerShape(12.dp), small = RoundedCornerShape(16.dp),
+            medium = RoundedCornerShape(24.dp), large = RoundedCornerShape(28.dp), extraLarge = RoundedCornerShape(36.dp)
+        ),
+        motionScheme = MotionScheme.expressive(),
+        content = { CompositionLocalProvider(LocalIsDarkTheme provides darkTheme) { content() } }
     )
 }
 
@@ -84,7 +94,7 @@ fun ShiguangScheduleTheme(
 fun rememberMaterialKolorScheme(
     darkTheme: Boolean,
     seedColor: Color,
-    style: PaletteStyle = PaletteStyle.TonalSpot
+    style: PaletteStyle = PaletteStyle.Expressive
 ): ColorScheme {
     return rememberDynamicColorScheme(
         seedColor = seedColor,

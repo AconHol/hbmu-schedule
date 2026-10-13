@@ -94,9 +94,9 @@ fun AdaptiveNavigationScaffold(
     navigationModifier: Modifier = Modifier,
     content: @Composable (PaddingValues) -> Unit
 ) {
-    val todayLabel = stringResource(Res.string.nav_today_schedule)
-    val courseLabel = stringResource(Res.string.nav_course_schedule)
-    val settingsLabel = stringResource(Res.string.nav_settings)
+    val todayLabel = "今日"
+    val courseLabel = "周课表"
+    val settingsLabel = "教务"
 
     val todaySelectedIcon = vectorResource(Res.drawable.view_agenda_filled_24px)
     val todayUnselectedIcon = vectorResource(Res.drawable.view_agenda_24px)
@@ -126,7 +126,7 @@ fun AdaptiveNavigationScaffold(
             ),
             NavItemData(
                 label = settingsLabel,
-                destination = Destination.Settings,
+                destination = Destination.Hbmu,
                 selectedIcon = settingsSelectedIcon,
                 unselectedIcon = settingsUnselectedIcon
             )

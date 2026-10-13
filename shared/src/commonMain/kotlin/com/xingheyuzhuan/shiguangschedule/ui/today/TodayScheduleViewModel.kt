@@ -17,6 +17,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.DayOfWeek
@@ -44,10 +47,16 @@ class TodayScheduleViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ScheduleGridStyle())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<TodayUiState> = appSettingsRepository.getAppSettings()
-        .flatMapLatest { settings ->
+    private val dates = flow {
+        while (true) {
+            emit(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date)
+            delay(30000)
+        }
+    }.distinctUntilChanged()
+
+    val uiState: StateFlow<TodayUiState> = combine(appSettingsRepository.getAppSettings(), dates) { settings, date -> settings to date }
+        .flatMapLatest { (settings, today) ->
             val tableId = settings.currentCourseTableId
-            val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             val dayOfWeek = today.dayOfWeek.isoDayNumber
 
             combine(

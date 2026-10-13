@@ -135,13 +135,13 @@ data class AppSettingsModel(
     val showNonCurrentWeekCourses: Boolean = false,
 
     /** 应用启动时显示的页面 */
-    val startScreen: StartScreen = StartScreen.COURSE_SCHEDULE,
+    val startScreen: StartScreen = StartScreen.TODAY_SCHEDULE,
 
     /** 应用主题模式 */
     val themeMode: AppThemeMode = AppThemeMode.FOLLOW_SYSTEM,
 
     /** 是否开启动态取色 (Material You) */
-    val useDynamicColor: Boolean = true,
+    val useDynamicColor: Boolean = false,
 
     /** 自定义主题主色（包含浅色和深色模式） */
     val customPrimaryColor: LightDarkValue<Long> = LightDarkValue(

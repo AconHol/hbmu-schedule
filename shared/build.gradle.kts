@@ -101,6 +101,7 @@ kotlin {
         }
 
         androidMain.dependencies {
+            implementation("com.microsoft.onnxruntime:onnxruntime-android:1.22.0")
             implementation(libs.androidx.sqlite.framework)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.webkit)
@@ -179,4 +180,9 @@ tasks.matching {
 }.configureEach {
     dependsOn(packSchoolsZip)
     dependsOn(exportLibraryDefinitions)
+}
+
+// Keep host-test JVM arguments independent of quoted Windows PATH entries.
+tasks.withType<Test>().configureEach {
+    systemProperty("java.library.path", "${System.getProperty("java.home")}/bin")
 }

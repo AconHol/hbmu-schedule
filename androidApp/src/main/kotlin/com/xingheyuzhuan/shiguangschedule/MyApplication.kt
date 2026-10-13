@@ -33,5 +33,6 @@ class MyApplication : Application(), Configuration.Provider {
             androidContext(this@MyApplication)
             workManagerFactory()
         }
+        com.xingheyuzhuan.shiguangschedule.hbmu.scheduleHbmuSync(this)
     }
 }

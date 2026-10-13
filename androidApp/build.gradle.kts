@@ -16,15 +16,23 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.xingheyuzhuan.shiguangschedule"
+        applicationId = "cn.hbmu.schedule"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 36
-        versionName = "2.1.0"
+        versionCode = 37
+        versionName = "2.1.0-hbmu.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    val hbmuSigning = System.getenv("HBMU_KEYSTORE_PATH")?.let { keyPath ->
+        signingConfigs.create("hbmuRelease") {
+            storeFile = file(keyPath)
+            storePassword = System.getenv("HBMU_STORE_PASSWORD")
+            keyAlias = "hbmu"
+            keyPassword = System.getenv("HBMU_STORE_PASSWORD")
+        }
+    }
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -33,7 +41,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = hbmuSigning ?: signingConfigs.getByName("debug")
         }
     }
 
@@ -46,7 +54,7 @@ android {
         abi {
             isEnable = true
             exclude("mips", "mips64", "armeabi", "riscv64", "x86")
-            isUniversalApk = false
+            isUniversalApk = true
             include("armeabi-v7a", "arm64-v8a", "x86_64")
         }
     }

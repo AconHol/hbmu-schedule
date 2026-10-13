@@ -24,6 +24,7 @@ dependencies {
     implementation(libs.koin.annotations)
 
     implementation(compose.desktop.currentOs)
+    implementation(libs.compose.material3)
     implementation(libs.kotlinx.coroutines.swing)
     implementation(libs.compose.ui.tooling.preview)
 }
@@ -48,6 +49,15 @@ compose.desktop {
             modules("jdk.unsupported")
         }
     }
+}
+
+tasks.register<JavaExec>("renderHbmuPreview") {
+    group = "verification"
+    description = "Render the shared HBMU Compose screens without opening a desktop window."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.xingheyuzhuan.shiguangschedule.PreviewHarnessKt")
+    systemProperty("java.awt.headless", "true")
+    systemProperty("user.timezone", "Asia/Shanghai")
 }
 
 tasks.register("renameDesktopPackage") {

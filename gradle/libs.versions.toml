@@ -10,7 +10,7 @@ ksp = "2.3.10"
 # KMP & Compose Multiplatform 专属
 composeMultiplatform = "1.11.1"
 kotlinxCoroutines = "1.11.0"
-material3 = "1.9.0"
+material3 = "1.11.0-alpha07"
 materialKolor = "5.0.0"
 compose-adaptive = "1.2.0"
 

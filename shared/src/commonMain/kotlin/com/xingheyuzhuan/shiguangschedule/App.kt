@@ -57,9 +57,14 @@ import com.xingheyuzhuan.shiguangschedule.ui.settings.update.UpdateRepoScreen
 import com.xingheyuzhuan.shiguangschedule.ui.theme.ShiguangScheduleTheme
 import com.xingheyuzhuan.shiguangschedule.ui.today.TodayScheduleScreen
 import org.koin.compose.viewmodel.koinViewModel
+import com.xingheyuzhuan.shiguangschedule.hbmu.HbmuScreen
+import com.xingheyuzhuan.shiguangschedule.hbmu.HbmuRepository
+import org.koin.compose.koinInject
 
 @Composable
 fun App() {
+    val hbmu: HbmuRepository = koinInject()
+    LaunchedEffect(Unit) { hbmu.resume() }
     val viewModel: SettingsViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsState()
 
@@ -185,6 +190,7 @@ fun ScreenContent(
             onNavHideFractionChanged = onNavHideFractionChanged
         )
         Destination.Settings -> SettingsScreen(onNavigate, onBack)
+        Destination.Hbmu -> HbmuScreen(onNavigate)
         Destination.TodaySchedule -> TodayScheduleScreen(onNavigate, onBack)
         Destination.ManageCourseTables -> ManageCourseTablesScreen(onBack)
         Destination.SchoolSelectionListScreen -> SchoolSelectionListScreen(onNavigate, onBack)

@@ -27,7 +27,8 @@ sealed interface Destination : NavKey {
 
     // --- 一级导航页面（底栏对应页面） ---
     @Serializable data object CourseSchedule : MainDestination
-    @Serializable data object Settings : MainDestination
+    @Serializable data object Settings : Destination
+    @Serializable data object Hbmu : MainDestination
     @Serializable data object TodaySchedule : MainDestination
 
     // --- 二级功能页面 ---
@@ -101,6 +102,7 @@ val navSerializersModule = SerializersModule {
         // 一级主界面
         subclass(Destination.CourseSchedule::class)
         subclass(Destination.Settings::class)
+        subclass(Destination.Hbmu::class)
         subclass(Destination.TodaySchedule::class)
 
         // 普通功能页面

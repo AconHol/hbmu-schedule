@@ -379,7 +379,7 @@ class CourseTableRepository(
     }
 }
 
-private val defaultTimeSlots = listOf(
+internal val defaultTimeSlots = listOf(
     TimeSlot(number = 1, startTime = "08:00", endTime = "08:45", timeTableId = "placeholder"),
     TimeSlot(number = 2, startTime = "08:50", endTime = "09:35", timeTableId = "placeholder"),
     TimeSlot(number = 3, startTime = "09:50", endTime = "10:35", timeTableId = "placeholder"),

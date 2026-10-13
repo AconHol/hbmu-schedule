@@ -96,7 +96,7 @@ fun WeeklyScheduleScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.xingheyuzhuan.shiguangschedule.ui.theme.LocalIsDarkTheme.current
     LaunchedEffect(isDark) {
         viewModel.updateDarkTheme(isDark)
     }
@@ -217,13 +217,14 @@ fun WeeklyScheduleScreen(
                             modifier = Modifier
                                 .clickable {
                                     if (!uiState.isSemesterSet || uiState.semesterStartDate == null) {
-                                        onNavigate(Destination.Settings)
+                                        onNavigate(Destination.Hbmu)
                                     } else {
                                         showWeekSelector = true
                                     }
                                 }
                                 .padding(vertical = 4.dp)
                         ) {
+                            Text("HBMU · 周课表", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                             Text(
                                 text = displayTitle,
                                 style = MaterialTheme.typography.titleLarge,
