@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule
 
 import androidx.compose.animation.core.tween
@@ -62,7 +63,7 @@ import com.xingheyuzhuan.shiguangschedule.hbmu.HbmuRepository
 import org.koin.compose.koinInject
 
 @Composable
-fun App() {
+fun App(scheduleOpenRequest: Int = 0) {
     val hbmu: HbmuRepository = koinInject()
     LaunchedEffect(Unit) { hbmu.resume() }
     val viewModel: SettingsViewModel = koinViewModel()
@@ -76,7 +77,7 @@ fun App() {
                     StartScreen.TODAY_SCHEDULE -> Destination.TodaySchedule
                 }
             }
-            AppNavigation(startDestination = startDest)
+            AppNavigation(startDestination = startDest, scheduleOpenRequest = scheduleOpenRequest)
         }
     } else {
         Surface(modifier = Modifier.fillMaxSize()) {}
@@ -84,7 +85,7 @@ fun App() {
 }
 
 @Composable
-fun AppNavigation(startDestination: Destination) {
+fun AppNavigation(startDestination: Destination, scheduleOpenRequest: Int = 0) {
     val backStack = rememberNavBackStack(
         configuration = navSavedStateConfig,
         startDestination
@@ -93,6 +94,7 @@ fun AppNavigation(startDestination: Destination) {
     val currentDestination = backStack.lastOrNull() as? Destination ?: startDestination
 
     var navHideFraction by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(currentDestination) { if (currentDestination != Destination.CourseSchedule) navHideFraction = 0f }
 
     val pendingFile by ExternalFileManager.pendingFile.collectAsState()
 
@@ -117,6 +119,8 @@ fun AppNavigation(startDestination: Destination) {
             onNavigate(target)
         }
     }
+
+    LaunchedEffect(scheduleOpenRequest) { if (scheduleOpenRequest > 0) onNavigate(Destination.CourseSchedule) }
 
     val onBack: () -> Unit = remember(backStack) {
         {

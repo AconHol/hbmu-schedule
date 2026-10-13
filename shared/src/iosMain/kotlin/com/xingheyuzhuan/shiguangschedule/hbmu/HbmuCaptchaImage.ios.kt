@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.hbmu
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable

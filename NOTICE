@@ -1,0 +1,19 @@
+课程表 / HBMU 学习项目
+
+Derived from ShiGuangSchedule/shiguangschedule v2.1.0.
+Original copyright: Copyright (C) 2025 XingHeYuZhuan and upstream contributors.
+Original source and license: https://github.com/ShiGuangSchedule/shiguangschedule
+
+HBMU integration, Material 3 Expressive adaptation, account UI, notification
+planning and publication documentation modifications: Copyright (C) 2026 AconHol.
+This distribution preserves the upstream Git history and Apache License 2.0.
+Changed source files carry a modification notice.
+
+Third-party notices:
+- ddddocr offline model/charset: MIT; retained at androidApp/src/main/assets/hbmu/LICENSE-ddddocr.txt.
+- ONNX Runtime: MIT; distributed notices are retained by the dependency package.
+- Haze: Apache License 2.0; dependency attribution is included in the app license listing.
+
+HBMU is referenced only to identify the school system being studied; no school
+or upstream endorsement is claimed. The source license grants no authorization
+to access school systems or process another person's data.

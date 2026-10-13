@@ -1,6 +1,10 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.service
 
 import android.app.NotificationChannel
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -37,6 +41,8 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
         const val EXTRA_COURSE_POSITION = "course_position"
         const val EXTRA_COURSE_TEACHER = "extra_course_teacher"
         const val EXTRA_COURSE_ID = "course_id"
+        const val EXTRA_COURSE_START = "course_start"
+        const val EXTRA_COURSE_END = "course_end"
 
         const val EXTRA_DND_ACTION = "extra_dnd_action"
         const val DND_ACTION_START = "dnd_action_start"
@@ -108,6 +114,7 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
                             }
                         }
                     } else {
+                        if (!appSettings.reminderEnabled) return@launch
                         val courseName = intent?.getStringExtra(EXTRA_COURSE_NAME).takeUnless { it.isNullOrEmpty() }
                             ?: ctx.getString(R.string.notification_unknown_course)
 
@@ -117,7 +124,8 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
                         val courseIdString = intent?.getStringExtra(EXTRA_COURSE_ID)
 
                         if (!courseIdString.isNullOrEmpty()) {
-                            showNotification(ctx, slotId, courseName, position, teacher, isCompatMode)
+                            showNotification(ctx, slotId, courseName, position, teacher, isCompatMode,
+                                intent?.getStringExtra(EXTRA_COURSE_START).orEmpty(), intent?.getStringExtra(EXTRA_COURSE_END).orEmpty())
                             removeAlarmIdFromPrefs(ctx, courseIdString)
                             updateAllWidgets(ctx)
                         }
@@ -137,9 +145,13 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
         name: String,
         position: String,
         teacher: String,
-        isCompatMode: Boolean
+        isCompatMode: Boolean,
+        startTime: String,
+        endTime: String
     ) {
         val nm = context.getSystemService<NotificationManager>() ?: return
+        if (!nm.areNotificationsEnabled()) return
+        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
 
         val alertTitle = context.getString(R.string.notification_title_course_alert)
         val closeActionText = context.getString(R.string.action_close)
@@ -150,7 +162,8 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
             context.getString(R.string.course_teacher_prefix, teacher)
         } else null
 
-        val bigTextContent = if (formattedTeacher != null) {
+        val timeDescription = if (startTime.isBlank()) "" else "$startTime — $endTime\n"
+        val bigTextContent = timeDescription + if (formattedTeacher != null) {
             "$formattedPosition\n$formattedTeacher"
         } else {
             formattedPosition
@@ -185,13 +198,14 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
             .setSmallIcon(R.drawable.ic_notification)
             .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher))
             .setContentTitle(name)
-            .setContentText(formattedPosition)
+            .setContentText("${startTime.takeIf { it.isNotBlank() }?.let { "$it · " }.orEmpty()}$position")
             .setSubText(alertTitle)
             .setStyle(bigTextStyle)
 
             // 非兼容模式应用
             .setOngoing(!isCompatMode)
             .setAutoCancel(isCompatMode)
+            .setTimeoutAfter(3 * 60 * 60 * 1000L)
 
             .setCategory(NotificationCompat.CATEGORY_EVENT)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -199,17 +213,15 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
             .addAction(0, closeActionText, dismissPI)
             .setContentIntent(
                 PendingIntent.getActivity(
-                    context, 0, Intent(context, MainActivity::class.java),
+                    context, 0, Intent(context, MainActivity::class.java).putExtra("open_week_schedule", true),
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
             )
 
-        // Android 16 实时更新特性
-        if (Build.VERSION.SDK_INT >= 36) {
+        if (Build.VERSION.SDK_INT >= 36 && !isCompatMode) {
             builder.setRequestPromotedOngoing(true)
             builder.setShortCriticalText(liveStatusText)
         }
-
         nm.notify(notificationId, builder.build())
     }
 

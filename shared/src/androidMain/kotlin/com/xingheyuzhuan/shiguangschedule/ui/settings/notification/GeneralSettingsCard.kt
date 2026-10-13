@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.settings.notification
 
 import android.os.Build
@@ -14,6 +15,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +55,9 @@ fun GeneralSettingsCard(
     uiState: NotificationSettingsUiState,
     currentModeText: String?,
     onReminderToggle: (Boolean) -> Unit,
+    onPreviewToggle: (Boolean) -> Unit,
+    onPreviewHourChange: (Int) -> Unit,
+    onNotificationPermissionClick: () -> Unit,
     onCompatWearableToggle: (Boolean) -> Unit,
     onAutoModeClick: () -> Unit,
     onRemindTimeClick: () -> Unit,
@@ -72,24 +78,29 @@ fun GeneralSettingsCard(
         Spacer(Modifier.height(8.dp))
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                contentColor = MaterialTheme.colorScheme.onSurface
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 // 权限说明头部
                 Text(
-                    text = stringResource(Res.string.text_permission_importance_title),
+                    text = "上课提醒与每日预告",
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = stringResource(Res.string.text_permission_importance_detail),
+                    text = "提醒会附带时间、教室与老师。点击通知即可回到课表。",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+                if (!uiState.notificationAllowed) {
+                    Text("允许通知后，上课提醒和明日预告才能送达。", style = MaterialTheme.typography.bodyMedium)
+                    TextButton(onNotificationPermissionClick) { Text("允许发送通知") }
+                }
 
                 // 1. 上课提醒主开关
                 Row(
@@ -105,11 +116,7 @@ fun GeneralSettingsCard(
                         checked = uiState.reminderEnabled,
                         onCheckedChange = { targetState ->
                             if (targetState) {
-                                if (hasExactAlarmPermission(context)) {
-                                    onReminderToggle(true)
-                                } else {
-                                    showExactAlarmDialog = true
-                                }
+                                onReminderToggle(true)
                             } else {
                                 onReminderToggle(false)
                             }
@@ -118,6 +125,22 @@ fun GeneralSettingsCard(
                 }
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("明日课表预告", style = MaterialTheme.typography.titleMedium)
+                        Text("前一晚通知明天的课程，空课表不打扰", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Switch(uiState.schedulePreviewEnabled, onPreviewToggle)
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(18, 20, 21).forEach { hour ->
+                        FilterChip(selected = uiState.schedulePreviewHour == hour, onClick = { onPreviewHourChange(hour) }, label = { Text("$hour:00") })
+                    }
+                }
+                Text("上课提醒使用课表中的作息时间，请在作息管理中校准学校的节次时间。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (!uiState.exactAlarmStatus) Text("开启准时提醒可减少系统延后通知。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
                 // 2. 兼容穿戴设备同步通知开关
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -178,7 +201,7 @@ fun GeneralSettingsCard(
                         stringResource(Res.string.status_disabled)
 
                     SettingItemRow(
-                        title = stringResource(Res.string.item_exact_alarm_permission),
+                        title = "准时提醒",
                         currentValue = statusText,
                         onClick = { openExactAlarmSettings(context) }
                     )

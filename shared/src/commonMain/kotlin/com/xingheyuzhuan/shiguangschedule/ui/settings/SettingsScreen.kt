@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.settings
 
 import androidx.compose.foundation.clickable

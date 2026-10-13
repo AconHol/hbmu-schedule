@@ -1,10 +1,14 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.hbmu
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,7 +34,7 @@ expect fun HbmuCaptchaImage(bytes: ByteArray, modifier: Modifier = Modifier)
 fun HbmuBrandHeader(title: String, subtitle: String, onTools: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text("HBMU / 湖北医药学院", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+            Text("课程表 / HBMU", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.height(6.dp))
             Text(title, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
             Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -53,46 +57,61 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
     var rememberLogin by remember(state.remember) { mutableStateOf(state.remember) }
     var autoSync by remember(state.autoSync) { mutableStateOf(state.autoSync) }
     var termMenu by remember { mutableStateOf(false) }
-    var semesterInput by remember(state.semester) { mutableStateOf(state.semester) }
+    var showLogin by remember { mutableStateOf(!state.signedIn) }
+    var showSignOut by remember { mutableStateOf(false) }
+    var showPrivacy by remember { mutableStateOf(false) }
+    LaunchedEffect(state.signedIn) { showLogin = !state.signedIn }
     LaunchedEffect(state.captcha) { code = state.captcha?.recognized.orEmpty() }
 
     Scaffold { padding ->
         LazyColumn(
-            Modifier.fillMaxSize().padding(padding),
+            Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 112.dp)
         ) {
-            item { HbmuBrandHeader("教务连接", "连接一次，课表随行", { onNavigate(Destination.Settings) }) }
+            item { HbmuBrandHeader("我的", "湖北医药学院 · 课表与账号", { onNavigate(Destination.Settings) }) }
             item {
                 Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), shape = RoundedCornerShape(32.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                     Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.primary) {
-                                Icon(vectorResource(Res.drawable.school_24px), null, Modifier.padding(12.dp).size(28.dp), tint = MaterialTheme.colorScheme.onPrimary)
+                            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(60.dp)) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    if (state.signedIn) Text(state.displayName.firstOrNull()?.toString() ?: "湖", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onPrimary)
+                                    else Icon(vectorResource(Res.drawable.account_circle_24px), null, Modifier.size(32.dp), tint = MaterialTheme.colorScheme.onPrimary)
+                                }
                             }
-                            Column {
-                                Text("湖北医药学院", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text("教务系统 · jw.hbmu.edu.cn", style = MaterialTheme.typography.bodySmall)
+                            Column(Modifier.weight(1f)) {
+                                Text(if (state.signedIn) state.displayName.ifBlank { "湖医学子" } else "连接你的教务账号", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                                Text(if (state.signedIn) "学号 ${state.account}" else "登录一次，课程自动同步", style = MaterialTheme.typography.bodyMedium)
+                                Text("湖北医药学院", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = .75f))
                             }
                         }
-                        Text(if (state.connected) "课表已连接" else if (state.lastSync > 0) "本地课表已保存" else "让每一节课，都井井有条", style = MaterialTheme.typography.headlineSmall)
-                        Text(state.message, style = MaterialTheme.typography.bodyMedium)
+                        if (state.signedIn) {
+                            Text(if (state.busy) "正在更新课表…" else if (state.connected) "教务已连接 · 本地课表可用" else "账号已绑定 · 本地课表可用", style = MaterialTheme.typography.labelLarge)
+                        } else Text("你的课程、周次和教室，一次同步。", style = MaterialTheme.typography.bodyMedium)
                         if (state.lastSync > 0) {
                             val date = Instant.fromEpochMilliseconds(state.lastSync).toLocalDateTime(TimeZone.currentSystemDefault())
                             Text("上次同步 ${date.date} ${date.hour.toString().padStart(2, '0')}:${date.minute.toString().padStart(2, '0')} · ${state.recordCount} 次排课",
                                 style = MaterialTheme.typography.labelMedium)
                         }
                         if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+                        if (state.signedIn && state.busy) Text(state.message, style = MaterialTheme.typography.bodySmall)
+                        TextButton(onClick = { showPrivacy = true }) {
+                            Text("学习用途 · 本地保存 · 隐私承诺")
+                        }
                     }
                 }
             }
             if (state.error != null) item {
                 Surface(Modifier.fillMaxWidth().padding(horizontal = 20.dp), shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.errorContainer) {
-                    Text(state.error!!, Modifier.padding(20.dp), color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodyMedium)
+                    Column(Modifier.padding(16.dp)) {
+                        Text(state.error!!, color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodyMedium)
+                        if (state.signedIn) TextButton({ showLogin = true }) { Text("重新登录") }
+                    }
                 }
             }
-            item {
+            if (state.signedIn) item {
                 Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                     Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         Text("我的学期", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -104,17 +123,13 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                                 }
                                 DropdownMenu(expanded = termMenu, onDismissRequest = { termMenu = false }) {
                                     state.terms.forEach { term -> DropdownMenuItem(text = { Text(term.label) }, onClick = {
-                                        termMenu = false; scope.launch { repository.selectSemester(term.code) }
+                                        termMenu = false; scope.launch { repository.selectSemester(term.code); repository.sync() }
                                     }) }
                                 }
                             }
                         } else {
-                            OutlinedTextField(value = semesterInput, onValueChange = { value ->
-                                semesterInput = value.filter(Char::isDigit).take(6)
-                                if (semesterInput.length == 6) scope.launch { repository.selectSemester(semesterInput) }
-                            }, label = { Text("学期代码") }, supportingText = { Text("登录后自动读取学校学期；例如 202601") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true,
-                                enabled = !state.busy, modifier = Modifier.fillMaxWidth())
+                            val year = state.semester.take(4).toIntOrNull()
+                            Text(if (year != null) "$year—${year + 1} 学年 · ${if (state.semester.endsWith("01")) "第一" else "第二"}学期" else "同步后读取学校学期", style = MaterialTheme.typography.bodyLarge)
                         }
                         Button(onClick = { scope.launch { repository.sync() } }, enabled = !state.busy && state.account.isNotBlank(), modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
                             Icon(vectorResource(Res.drawable.refresh_24px), null); Spacer(Modifier.width(8.dp)); Text("同步整学期课表")
@@ -122,10 +137,12 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                     }
                 }
             }
-            if (!state.connected) item {
+            if (showLogin || !state.signedIn) item {
                 Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                     Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Text("登录教务", style = MaterialTheme.typography.titleLarge)
+                        Text("非官方学习项目，请仅使用本人有权使用的账号与数据。开发者不收集你的个人信息。",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         OutlinedTextField(account, { account = it.trim() }, label = { Text("学号") }, singleLine = true, enabled = !state.busy,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text), modifier = Modifier.fillMaxWidth())
                         OutlinedTextField(password, { password = it }, label = { Text("教务密码") }, singleLine = true, enabled = !state.busy,
@@ -147,7 +164,7 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                         }
                         Button(onClick = { scope.launch {
                             repository.signIn(account, password, code, rememberLogin, autoSync)
-                            if (repository.uiState.value.connected) password = ""
+                            if (repository.uiState.value.signedIn) { password = ""; showLogin = false }
                         } }, enabled = !state.busy && account.isNotBlank() && password.isNotBlank(), modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
                             Text(if (code.isBlank()) "自动识别验证码并登录" else "登录并同步课表")
                         }
@@ -157,11 +174,10 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                     }
                 }
             }
-            if (state.connected) item {
+            if (state.signedIn) item {
                 Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                     Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("登录状态", style = MaterialTheme.typography.titleMedium)
-                        Text("学号 ${state.account}", style = MaterialTheme.typography.bodyMedium)
+                        Text("账号偏好", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) { Text("保持登录"); Text("会话失效时自动重新登录", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                             Switch(state.remember, { scope.launch { repository.updatePreferences(it, state.autoSync) } }, enabled = !state.busy)
@@ -170,7 +186,19 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                             Column(Modifier.weight(1f)) { Text("自动同步"); Text("打开应用时检查，后台定期更新", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                             Switch(state.autoSync, { autoSync = it; scope.launch { repository.updatePreferences(state.remember, it) } }, enabled = !state.busy)
                         }
-                        TextButton(onClick = { scope.launch { repository.signOut() } }, enabled = !state.busy) { Text("退出登录", color = MaterialTheme.colorScheme.error) }
+                        TextButton(onClick = { showSignOut = true }, enabled = !state.busy) { Text("退出账号", color = MaterialTheme.colorScheme.error) }
+                    }
+                }
+            }
+            item {
+                Card(onClick = { onNavigate(Destination.NotificationSettings) }, modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+                    Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Icon(vectorResource(Res.drawable.calendar_today_24px), null, Modifier.size(28.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("上课提醒与明日预告", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text("课前提醒，前一晚安排好明天", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Icon(vectorResource(Res.drawable.chevron_right_24px), null)
                     }
                 }
             }
@@ -186,4 +214,14 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
             }
         }
     }
+    if (showSignOut) AlertDialog(onDismissRequest = { showSignOut = false }, title = { Text("退出教务账号？") },
+        text = { Text("本地课表会保留。退出后将停止自动登录与教务同步。") },
+        confirmButton = { TextButton({ showSignOut = false; scope.launch { repository.signOut() } }) { Text("退出账号") } },
+        dismissButton = { TextButton({ showSignOut = false }) { Text("取消") } })
+    if (showPrivacy) AlertDialog(
+        onDismissRequest = { showPrivacy = false },
+        title = { Text("学习用途与隐私承诺") },
+        text = { Text("本项目为个人开发学习与研究使用，非学校官方产品。请仅处理本人有权使用的数据，并遵守适用规则与必要授权。\n\n开发者绝不会私自盗取、收集、留存、出售或分享你的账号、密码、姓名、课表等个人信息。本应用没有开发者的数据收集服务器，不会将这些信息上传给开发者。账号与课表保存在你的设备；保持登录的信息在本机加密保存。\n\n你主动配置的备份、导出、分享或日历操作由你控制；系统备份由设备设置控制，登录凭据已排除在系统备份之外。联网服务仍受相应服务方的规则与隐私政策约束。\n\n学习用途声明不替代必要授权，也不免除依法应承担的责任。", modifier = Modifier.verticalScroll(rememberScrollState())) },
+        confirmButton = { TextButton(onClick = { showPrivacy = false }) { Text("知道了") } }
+    )
 }

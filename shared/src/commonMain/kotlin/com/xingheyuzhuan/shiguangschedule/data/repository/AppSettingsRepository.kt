@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.data.repository
 
 import androidx.datastore.core.DataStore
@@ -170,6 +171,8 @@ class AppSettingsRepository(
             prefs[AppSettingsModel.KEY_CURRENT_COURSE_TABLE_ID] = newSettings.currentCourseTableId
             prefs[AppSettingsModel.KEY_REMINDER_ENABLED] = newSettings.reminderEnabled
             prefs[AppSettingsModel.KEY_REMIND_BEFORE_MINUTES] = newSettings.remindBeforeMinutes
+            prefs[AppSettingsModel.KEY_SCHEDULE_PREVIEW_ENABLED] = newSettings.schedulePreviewEnabled
+            prefs[AppSettingsModel.KEY_SCHEDULE_PREVIEW_HOUR] = newSettings.schedulePreviewHour.coerceIn(0, 23)
             prefs[AppSettingsModel.KEY_HOLIDAYS_JSON] = Json.encodeToString(newSettings.holidays)
             prefs[AppSettingsModel.KEY_AUTO_MODE_ENABLED] = newSettings.autoModeEnabled
             prefs[AppSettingsModel.KEY_AUTO_CONTROL_MODE] = newSettings.autoControlMode.value

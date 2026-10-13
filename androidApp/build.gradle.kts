@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 import com.android.build.api.variant.FilterConfiguration
 
 plugins {
@@ -19,8 +20,8 @@ android {
         applicationId = "cn.hbmu.schedule"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 37
-        versionName = "2.1.0-hbmu.1"
+        versionCode = 40
+        versionName = "2.1.0-hbmu.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.data.model
 
 import androidx.compose.ui.graphics.toArgb
@@ -114,6 +115,8 @@ data class AppSettingsModel(
 
     /** 提前提醒的时间（分钟） */
     val remindBeforeMinutes: Int = 15,
+    val schedulePreviewEnabled: Boolean = false,
+    val schedulePreviewHour: Int = 20,
 
     /** 节假日及调休列表 */
     val holidays: List<Holiday> = emptyList(),
@@ -170,6 +173,8 @@ data class AppSettingsModel(
         val KEY_REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
         /** 提前提醒时间（分钟）的存储键 */
         val KEY_REMIND_BEFORE_MINUTES = intPreferencesKey("remind_before_minutes")
+        val KEY_SCHEDULE_PREVIEW_ENABLED = booleanPreferencesKey("schedule_preview_enabled")
+        val KEY_SCHEDULE_PREVIEW_HOUR = intPreferencesKey("schedule_preview_hour")
         /** 节假日及调休列表 JSON 字符串的存储键 */
         val KEY_HOLIDAYS_JSON = stringPreferencesKey("holidays_json")
         /** 自动化模式总开关的存储键 */
@@ -228,6 +233,8 @@ data class AppSettingsModel(
                 currentCourseTableId = prefs[KEY_CURRENT_COURSE_TABLE_ID] ?: fallbackTableId.ifEmpty { d.currentCourseTableId },
                 reminderEnabled = prefs[KEY_REMINDER_ENABLED] ?: d.reminderEnabled,
                 remindBeforeMinutes = prefs[KEY_REMIND_BEFORE_MINUTES] ?: d.remindBeforeMinutes,
+                schedulePreviewEnabled = prefs[KEY_SCHEDULE_PREVIEW_ENABLED] ?: d.schedulePreviewEnabled,
+                schedulePreviewHour = (prefs[KEY_SCHEDULE_PREVIEW_HOUR] ?: d.schedulePreviewHour).coerceIn(0, 23),
                 holidays = parsedHolidays,
                 autoModeEnabled = prefs[KEY_AUTO_MODE_ENABLED] ?: d.autoModeEnabled,
                 autoControlMode = AutoControlMode.fromString(prefs[KEY_AUTO_CONTROL_MODE]),

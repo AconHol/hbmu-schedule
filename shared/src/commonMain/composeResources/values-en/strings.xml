@@ -1,6 +1,7 @@
+<!-- Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained. -->
 <resources>
     <!-- Basic App Information -->
-    <string name="app_name">HBMU Schedule</string>
+    <string name="app_name">Course Schedule</string>
 
     <!-- Common Buttons and Messages -->
     <string name="action_confirm">Confirm</string>

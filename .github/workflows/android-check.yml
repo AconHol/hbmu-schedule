@@ -1,0 +1,22 @@
+# Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
+name: Android 学习构建检查
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK
+        run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0'
+      - name: Build and test without real school credentials
+        run: |
+          chmod +x gradlew
+          ./gradlew :shared:testAndroidHostTest :androidApp:assembleDebug --no-configuration-cache

@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.today
 
 import androidx.compose.foundation.layout.*
@@ -29,6 +30,7 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
     viewModel: TodayScheduleViewModel = koinViewModel(), hbmu: HbmuRepository = koinInject()) {
     val uiState by viewModel.uiState.collectAsState()
     val connection by hbmu.uiState.collectAsState()
+    val tomorrow by viewModel.tomorrowCourses.collectAsState()
     var time by remember { mutableStateOf(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time) }
     var detail by remember { mutableStateOf<CourseDisplayModel?>(null) }
     val scope = rememberCoroutineScope()
@@ -43,12 +45,12 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
                 Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), shape = RoundedCornerShape(36.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)) {
                     Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(if (next != null) "接下来" else "今日安排", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+                            Text(if (next != null && next.startTime != null && next.startTime!! <= time.toString().take(5)) "正在上课" else if (next != null) "下一节课" else "今日安排", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
                             Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = .14f), contentColor = MaterialTheme.colorScheme.onPrimary) {
                                 Text(if (state != null && state.weekIndex > 0) "第 ${state.weekIndex} 周" else "HBMU", Modifier.padding(horizontal = 14.dp, vertical = 6.dp), style = MaterialTheme.typography.labelMedium)
                             }
                         }
-                        Text(next?.course?.name ?: if (connection.lastSync == 0L) "连接你的课表" else "今天，留点时间给自己", style = MaterialTheme.typography.headlineMedium)
+                        Text(next?.course?.name ?: if (connection.lastSync == 0L) "连接你的课表" else if (state?.courses?.isNotEmpty() == true) "今天的课，已完成" else "今天，留点空白", style = MaterialTheme.typography.headlineMedium)
                         Text(if (next != null) "${next.startTime ?: "时间待设置"} — ${next.endTime ?: ""} · ${next.course.position.ifBlank { "教室待公布" }}" else if (connection.lastSync == 0L) "登录教务，自动同步整学期课程" else "今天的课程已经结束，或暂无排课", style = MaterialTheme.typography.bodyLarge)
                         FilledTonalButton(onClick = { if (next != null) detail = next else onNavigate(if (connection.lastSync == 0L) Destination.Hbmu else Destination.CourseSchedule) }, modifier = Modifier.heightIn(min = 48.dp)) {
                             Text(if (next != null) "查看课程详情" else if (connection.lastSync == 0L) "连接 HBMU 教务" else "查看本周课表")
@@ -62,7 +64,7 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
                     FilledTonalButton({ onNavigate(Destination.CourseSchedule) }, Modifier.weight(1f).heightIn(min = 52.dp)) {
                         Icon(vectorResource(Res.drawable.view_week_24px), null); Spacer(Modifier.width(8.dp)); Text("本周课表")
                     }
-                    OutlinedButton({ if (connection.account.isBlank()) onNavigate(Destination.Hbmu) else scope.launch { hbmu.sync() } }, Modifier.weight(1f).heightIn(min = 52.dp), enabled = !connection.busy) {
+                    OutlinedButton({ if (!connection.signedIn) onNavigate(Destination.Hbmu) else scope.launch { hbmu.sync() } }, Modifier.weight(1f).heightIn(min = 52.dp), enabled = !connection.busy) {
                         Icon(vectorResource(Res.drawable.refresh_24px), null); Spacer(Modifier.width(8.dp)); Text(if (connection.busy) "同步中" else "同步课表")
                     }
                 }
@@ -102,9 +104,29 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
                 }
             }
             item {
+                Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), shape = RoundedCornerShape(28.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
+                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("明日预告", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text("${tomorrow.size} 堂课", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                        }
+                        if (tomorrow.isEmpty()) Text(if (connection.lastSync == 0L) "同步课表后，就能提前看到明天的安排。" else "明天暂无课程安排", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        tomorrow.take(3).forEach { course ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+                                Text(course.startTime, Modifier.width(48.dp), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                                Column(Modifier.weight(1f)) {
+                                    Text(course.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                                    Text(course.position.ifBlank { "教室待公布" }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                        TextButton({ onNavigate(Destination.NotificationSettings) }) { Text("设置上课提醒与每日预告") }
+                    }
+                }
+            }
+            item {
                 Column(Modifier.padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(if (connection.lastSync > 0) "已保存本地课表 · 离线也能查看" else "HBMU 课表，与你的校园节奏同步", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    if (connection.error != null) Text(connection.error!!, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                    Text(if (connection.lastSync > 0) "已保存本地课表 · 离线也能查看" else "课程表 · 安排好每一天", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

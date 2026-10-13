@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.schedule
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -170,7 +171,7 @@ fun WeeklyScheduleScreen(
 
     val (displayTitle, titleTextColor) = when {
         !uiState.isSemesterSet || uiState.semesterStartDate == null -> {
-            stringResource(Res.string.title_semester_not_set) to MaterialTheme.colorScheme.error
+            "连接教务课表" to customTextColor
         }
         uiState.daysUntilStart > 0 -> {
             stringResource(Res.string.title_vacation_until_start, uiState.daysUntilStart.toString()) to customTextColor
@@ -183,15 +184,14 @@ fun WeeklyScheduleScreen(
         }
     }
 
-    val collapseFraction = scrollBehavior.state.collapsedFraction
-    val navHideFraction = if (floatingCourse != null) 1f else collapseFraction
+    val navHideFraction = if (floatingCourse != null) 1f else 0f
 
     LaunchedEffect(navHideFraction) {
         onNavHideFractionChanged(navHideFraction)
     }
 
     val systemNavigationBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    val dynamicBottomOffset = systemNavigationBarInset + (88.dp * (1f - navHideFraction))
+    val dynamicBottomOffset = systemNavigationBarInset + (com.xingheyuzhuan.shiguangschedule.ui.components.FloatingNavigationHeight * (1f - navHideFraction))
 
     Box(modifier = Modifier.fillMaxSize()) {
         uiState.wallpaperPath?.let { path ->
@@ -210,50 +210,17 @@ fun WeeklyScheduleScreen(
             containerColor = Color.Transparent,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             topBar = {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .clickable {
-                                    if (!uiState.isSemesterSet || uiState.semesterStartDate == null) {
-                                        onNavigate(Destination.Hbmu)
-                                    } else {
-                                        showWeekSelector = true
-                                    }
-                                }
-                                .padding(vertical = 4.dp)
-                        ) {
-                            Text("HBMU · 周课表", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-                            Text(
-                                text = displayTitle,
-                                style = MaterialTheme.typography.titleLarge,
-                                color = titleTextColor
-                            )
-                            Icon(
-                                imageVector = vectorResource(Res.drawable.arrow_drop_down_24px),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .offset(y = (-4).dp),
-                                tint = customSubTextColor
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { showTableSwitcher = true }) {
-                            Icon(
-                                imageVector = vectorResource(Res.drawable.swap_horiz_24px),
-                                contentDescription = stringResource(Res.string.action_select_table),
-                                tint = customTextColor
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent,
-                        scrolledContainerColor = Color.Transparent,
-                    ),
-                    scrollBehavior = scrollBehavior
+                val firstDate = getPreviousOrSameDay(today, DayOfWeek(uiState.firstDayOfWeek))
+                    .plus((pagerState.currentPage - INFINITE_PAGER_CENTER).toLong() * 7, DateTimeUnit.DAY)
+                com.xingheyuzhuan.shiguangschedule.ui.schedule.components.HbmuWeekHeader(
+                    weekTitle = displayTitle, firstDate = firstDate, lastDate = firstDate.plus(6, DateTimeUnit.DAY),
+                    isCurrentWeek = pagerState.currentPage == INFINITE_PAGER_CENTER,
+                    onPrevious = { coroutineScope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) } },
+                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) } },
+                    onSelectWeek = { if (uiState.isSemesterSet) showWeekSelector = true else onNavigate(Destination.Hbmu) },
+                    onToday = { coroutineScope.launch { pagerState.animateScrollToPage(INFINITE_PAGER_CENTER) } },
+                    onTables = { showTableSwitcher = true },
+                    onSettings = { onNavigate(Destination.StyleSettings) }
                 )
             },
             snackbarHost = {
@@ -272,6 +239,7 @@ fun WeeklyScheduleScreen(
                         top = scaffoldInnerPadding.calculateTopPadding(),
                         end = scaffoldInnerPadding.calculateEndPadding(LayoutDirection.Ltr)
                     )
+                    .padding(horizontal = 8.dp)
                     .fillMaxSize(),
                 beyondViewportPageCount = 1,
                 userScrollEnabled = !isGridHolding

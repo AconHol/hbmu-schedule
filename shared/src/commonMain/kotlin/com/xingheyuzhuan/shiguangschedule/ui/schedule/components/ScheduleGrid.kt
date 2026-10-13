@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.schedule.components
 
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -176,6 +177,7 @@ fun ScheduleGrid(
                     .fillMaxSize()
                     .onSizeChanged { state.viewportHeightPx = it.height.toFloat() }
                     .verticalScroll(state = state.gridScrollState, enabled = state.expandedItem == null)
+                    .padding(bottom = com.xingheyuzhuan.shiguangschedule.ui.components.FloatingNavigationHeight)
             ) {
                 TimeColumn(
                     style = style, timeSlots = viewState.timeSlots, maxGridSections = maxGridSections,

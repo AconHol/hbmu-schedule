@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.schedule.components
 
 import androidx.compose.foundation.ScrollState
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -229,7 +232,9 @@ fun DayHeader(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .background(if (index == todayIndex) MaterialTheme.colorScheme.primaryContainer.copy(0.4f) else Color.Transparent),
+                            .padding(horizontal = 3.dp, vertical = 4.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(if (index == todayIndex) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerLow),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
@@ -243,7 +248,7 @@ fun DayHeader(
                                 text = day,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = textColor,
+                                color = if (index == todayIndex) MaterialTheme.colorScheme.onPrimary else textColor,
                                 maxLines = 1,
                                 style = TextStyle(
                                     lineHeight = 16.sp
@@ -253,9 +258,9 @@ fun DayHeader(
                             if (shouldShowDate && dates.size > index) {
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = dates[index],
-                                    fontSize = 10.sp,
-                                    color = subTextColor,
+                                    text = dates[index].substringAfter("-"),
+                                    fontSize = 11.sp,
+                                    color = if (index == todayIndex) MaterialTheme.colorScheme.onPrimary.copy(alpha = .85f) else subTextColor,
                                     maxLines = 1,
                                     style = TextStyle(
                                         lineHeight = 12.sp

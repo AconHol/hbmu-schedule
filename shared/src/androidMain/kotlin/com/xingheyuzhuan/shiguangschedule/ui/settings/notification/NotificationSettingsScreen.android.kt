@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.settings.notification
 
 import android.Manifest
@@ -37,6 +38,7 @@ actual fun PlatformGeneralSettingsSection(
     val notificationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
+        viewModel.updateNotificationStatus(isGranted)
         if (!isGranted) {
             ToastManager.show(permissionDeniedMessage)
         }
@@ -48,6 +50,7 @@ actual fun PlatformGeneralSettingsSection(
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.updateExactAlarmStatus(hasExactAlarmPermission(context))
                 viewModel.updateDndPermissionStatus(hasDndPermission(context))
+                viewModel.updateNotificationStatus(hasNotificationPermission(context) && androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled())
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -59,9 +62,9 @@ actual fun PlatformGeneralSettingsSection(
 
     // 页面首次挂载时在 Android 13+ 平台上按需发起通知权限申请
     LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission(context)) {
-            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+        viewModel.updateExactAlarmStatus(hasExactAlarmPermission(context))
+        viewModel.updateDndPermissionStatus(hasDndPermission(context))
+        viewModel.updateNotificationStatus(hasNotificationPermission(context) && androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled())
     }
 
     val currentModeText = if (!uiState.autoModeEnabled) {
@@ -80,6 +83,16 @@ actual fun PlatformGeneralSettingsSection(
         currentModeText = currentModeText,
         onReminderToggle = { isEnabled ->
             viewModel.updateReminderEnabled(isEnabled)
+            if (isEnabled && Build.VERSION.SDK_INT >= 33 && !hasNotificationPermission(context)) notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        },
+        onPreviewToggle = { enabled ->
+            viewModel.updateSchedulePreview(enabled)
+            if (enabled && Build.VERSION.SDK_INT >= 33 && !hasNotificationPermission(context)) notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        },
+        onPreviewHourChange = { hour -> viewModel.updateSchedulePreview(uiState.schedulePreviewEnabled, hour) },
+        onNotificationPermissionClick = {
+            if (Build.VERSION.SDK_INT >= 33 && !hasNotificationPermission(context)) notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            else openAppSettings(context)
         },
         onCompatWearableToggle = { isEnabled ->
             viewModel.updateCompatWearableSync(isEnabled)

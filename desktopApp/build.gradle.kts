@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption

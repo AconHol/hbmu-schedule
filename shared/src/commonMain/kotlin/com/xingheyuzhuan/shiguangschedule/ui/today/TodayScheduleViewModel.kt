@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.today
 
 import androidx.lifecycle.ViewModel
@@ -11,6 +12,8 @@ import com.xingheyuzhuan.shiguangschedule.data.repository.AppSettingsRepository
 import com.xingheyuzhuan.shiguangschedule.data.repository.CourseTableRepository
 import com.xingheyuzhuan.shiguangschedule.data.repository.StyleSettingsRepository
 import com.xingheyuzhuan.shiguangschedule.data.repository.TimeScheduleRepository
+import com.xingheyuzhuan.shiguangschedule.data.repository.WidgetRepository
+import com.xingheyuzhuan.shiguangschedule.data.db.widget.WidgetCourse
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,15 +30,19 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.plus
+import kotlinx.datetime.DateTimeUnit
 import org.koin.core.annotation.KoinViewModel
 import kotlin.time.Clock
 
 @KoinViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class TodayScheduleViewModel(
     private val appSettingsRepository: AppSettingsRepository,
     private val courseTableRepository: CourseTableRepository,
     private val styleSettingsRepository: StyleSettingsRepository,
-    private val timeScheduleRepository: TimeScheduleRepository
+    private val timeScheduleRepository: TimeScheduleRepository,
+    private val widgetRepository: WidgetRepository
 ) : ViewModel() {
 
     companion object {
@@ -53,6 +60,12 @@ class TodayScheduleViewModel(
             delay(30000)
         }
     }.distinctUntilChanged()
+
+    val tomorrowCourses: StateFlow<List<WidgetCourse>> = dates.flatMapLatest { today ->
+        val tomorrow = today.plus(1, DateTimeUnit.DAY).toString()
+        widgetRepository.getWidgetCoursesByDateRange(tomorrow, tomorrow)
+            .map { courses -> courses.filterNot { it.isSkipped }.sortedBy { it.startTime } }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val uiState: StateFlow<TodayUiState> = combine(appSettingsRepository.getAppSettings(), dates) { settings, date -> settings to date }
         .flatMapLatest { (settings, today) ->

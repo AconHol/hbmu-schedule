@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.schedule.components
 
 import androidx.compose.foundation.background
@@ -22,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -53,14 +55,15 @@ fun CourseBlock(
         val baseColorMap = style.courseColorMaps[index]
         if (isDarkTheme) baseColorMap.dark else baseColorMap.light
     }
-    val fallbackColorAdapted: Color = if (isDarkTheme) style.courseColorMaps.first().dark else style.courseColorMaps.first().light
+    val fallbackColorAdapted: Color = style.courseColorMaps.firstOrNull()?.let { if (isDarkTheme) it.dark else it.light }
+        ?: MaterialTheme.colorScheme.secondaryContainer
 
     val currentAlpha = if (isFloating) 0.95f else style.courseBlockAlpha
     val blockColor = (courseColorAdapted ?: fallbackColorAdapted).copy(alpha = currentAlpha)
-    val textColor = style.courseTextColor ?: MaterialTheme.colorScheme.onSurface
+    val textColor = style.courseTextColor ?: if (blockColor.luminance() > .4f) Color(0xFF192B26) else Color(0xFFF2F5F0)
 
     // 字体大小
-    val s13 = (13 * style.fontScale).sp
+    val s13 = (12 * style.fontScale).sp
     val s10 = (10 * style.fontScale).sp
 
     // 核心分支逻辑：判断 24小时模式 与 节次模式 的时间文本渲染
@@ -90,7 +93,7 @@ fun CourseBlock(
     }
 
     // 边框样式配置
-    val borderColor = if (isFloating) Color(0xFF2196F3) else MaterialTheme.colorScheme.outline
+    val borderColor = if (isFloating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
     val borderWidth = if (isFloating) 2.dp else 1.dp
     val borderAlpha = if (isFloating) 1.0f else style.courseBlockAlpha
     val shape = RoundedCornerShape(style.courseBlockCornerRadius)
@@ -133,10 +136,15 @@ fun CourseBlock(
             .then(borderModifier)
             .clip(shape)
             .background(color = blockColor)
+            .drawBehind {
+                drawRoundRect(textColor.copy(alpha = .22f), topLeft = Offset(3.dp.toPx(), 9.dp.toPx()),
+                    size = androidx.compose.ui.geometry.Size(2.dp.toPx(), (size.height - 18.dp.toPx()).coerceAtLeast(0f)),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(1.dp.toPx()))
+            }
     ) {
         // 课程文字内容容器
         Column(
-            modifier = Modifier.fillMaxSize().padding(style.courseBlockInnerPadding),
+            modifier = Modifier.fillMaxSize().padding(start = style.courseBlockInnerPadding + 2.dp, end = style.courseBlockInnerPadding, top = style.courseBlockInnerPadding, bottom = style.courseBlockInnerPadding),
             horizontalAlignment = horizontalAlignment,
             verticalArrangement = verticalArrangement
         ) {
@@ -157,6 +165,7 @@ fun CourseBlock(
                 fontWeight = FontWeight.Bold,
                 color = textColor,
                 overflow = TextOverflow.Ellipsis,
+                maxLines = 4,
                 textAlign = textAlign,
                 modifier = Modifier.weight(1f, fill = false),
                 style = TextStyle(lineHeight = 1.2.em)
@@ -165,15 +174,15 @@ fun CourseBlock(
             if (!style.hideTeacher) {
                 val teacher = course.teacher
                 if (teacher.isNotBlank()) {
-                    Text(text = teacher, fontSize = s10, color = textColor, textAlign = textAlign, overflow = TextOverflow.Ellipsis, style = TextStyle(lineHeight = 1.em))
+                    Text(text = teacher, fontSize = s10, color = textColor.copy(alpha = .75f), textAlign = textAlign, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(lineHeight = 1.2.em))
                 }
             }
 
             if (!style.hideLocation) {
                 val position = course.position
                 if (position.isNotBlank()) {
-                    val prefix = if (style.removeLocationAt) "" else "@"
-                    Text(text = "$prefix$position", fontSize = s10, color = textColor, textAlign = textAlign, overflow = TextOverflow.Ellipsis, style = TextStyle(lineHeight = 1.em))
+                    val prefix = if (style.removeLocationAt) "" else "· "
+                    Text(text = "$prefix$position", fontSize = s10, color = textColor, textAlign = textAlign, maxLines = 2, overflow = TextOverflow.Ellipsis, style = TextStyle(lineHeight = 1.2.em))
                 }
             }
         }

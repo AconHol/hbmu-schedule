@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule
 
 import android.app.Application
@@ -34,5 +35,6 @@ class MyApplication : Application(), Configuration.Provider {
             workManagerFactory()
         }
         com.xingheyuzhuan.shiguangschedule.hbmu.scheduleHbmuSync(this)
+        com.xingheyuzhuan.shiguangschedule.service.CourseNotificationWorker.schedulePeriodic(this)
     }
 }

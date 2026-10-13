@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): independent learning release and privacy notices.
 package com.xingheyuzhuan.shiguangschedule.ui.settings.additional
 
 import androidx.compose.foundation.layout.Column
@@ -63,7 +64,7 @@ import shiguangschedule.shared.generated.resources.theme_settings_title
 import shiguangschedule.shared.generated.resources.title_more_options
 import shiguangschedule.shared.generated.resources.update_24px
 
-private const val GITHUB_REPO_URL = "https://github.com/XingHeYuZhuan/shiguangschedule"
+private const val GITHUB_REPO_URL = "https://github.com/AconHol/hbmu-schedule"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,7 +87,7 @@ fun MoreOptionsScreen(
 
     // 更新逻辑相关状态
     var updateStatus by remember { mutableStateOf<UpdateStatus>(UpdateStatus.Idle) }
-    var selectedPlatform by remember { mutableStateOf(UpdatePlatform.GITEE) }
+    var selectedPlatform by remember { mutableStateOf(UpdatePlatform.GITHUB) }
 
     // 弹窗可见性控制
     var showUpdateDialog by remember { mutableStateOf(false) }

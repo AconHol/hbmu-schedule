@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,7 +38,7 @@ fun main(args: Array<String>): Unit = runBlocking {
         val hbmu = koin.get<HbmuRepository>()
         @Suppress("UNCHECKED_CAST")
         val state = HbmuRepository::class.java.getDeclaredField("state").apply { isAccessible = true }.get(hbmu) as MutableStateFlow<HbmuState>
-        state.value = state.value.copy(account = "预览账号", connected = true, semester = "202601", lastSync = System.currentTimeMillis(), recordCount = parsed.total,
+        state.value = state.value.copy(account = "20260001", displayName = "湖医学子", signedIn = true, connected = true, semester = "202601", lastSync = System.currentTimeMillis(), recordCount = parsed.total,
             terms = listOf(HbmuTerm("202601", "2026—2027 学年 · 第一学期")), message = "已同步 ${parsed.total} 次排课，可离线查看")
     }
     val output = File(System.getenv("HBMU_PREVIEW_OUTPUT") ?: "build/hbmu-preview").apply { mkdirs() }

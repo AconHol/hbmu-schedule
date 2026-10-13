@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -53,6 +54,7 @@ kotlin {
                 implementation(libs.compose.material3.adaptive.navigation.suite)
                 implementation(libs.compose.ui)
                 implementation(libs.compose.animation)
+                implementation("dev.chrisbanes.haze:haze:1.7.2")
                 implementation(libs.compose.components.resources)
                 implementation(libs.compose.ui.tooling.preview)
 

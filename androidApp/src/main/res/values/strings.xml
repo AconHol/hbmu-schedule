@@ -1,6 +1,7 @@
+<!-- Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained. -->
 <resources>
     <!-- 应用基础信息 -->
-    <string name="app_name">HBMU 课表</string>
+    <string name="app_name">课程表</string>
 
     <!-- 小组件和通知 -->
     <string name="action_confirm">确定</string>

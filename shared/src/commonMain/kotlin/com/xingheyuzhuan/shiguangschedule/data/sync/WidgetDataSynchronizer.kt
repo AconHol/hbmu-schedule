@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.data.sync
 
 import com.xingheyuzhuan.shiguangschedule.data.db.main.CourseTableConfig
@@ -124,7 +125,7 @@ class WidgetDataSynchronizer(
                 Triple(
                     settings.reminderEnabled to settings.remindBeforeMinutes,
                     settings.autoModeEnabled to settings.autoControlMode,
-                    settings.compatWearableSync
+                    Triple(settings.compatWearableSync, settings.schedulePreviewEnabled, settings.schedulePreviewHour)
                 )
             }
             .distinctUntilChanged()
@@ -137,7 +138,7 @@ class WidgetDataSynchronizer(
     /**
      * 手动触发一次性数据同步（挂起函数）。
      */
-    suspend fun syncNow() {
+    suspend fun syncNow(notify: Boolean = true) {
         val appSettings = appSettingsRepository.getAppSettings().first()
         val tableId = appSettings.currentCourseTableId
 
@@ -150,7 +151,7 @@ class WidgetDataSynchronizer(
             widgetRepository.deleteAll()
             widgetRepository.insertOrUpdateAppSettings(WidgetAppSettings(id = 1, semesterStartDate = null))
         }
-        _syncCompletedChannel.trySend(Unit)
+        if (notify) _syncCompletedChannel.trySend(Unit)
     }
 
     /**

@@ -1,3 +1,4 @@
+<!-- Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
     <path android:fillColor="#285E50" android:pathData="M0,0H108V108H0Z" />
     <path android:fillColor="#DCEBCB" android:pathData="M31,29H77Q84,29 84,36V77Q84,84 77,84H31Q24,84 24,77V36Q24,29 31,29Z" />

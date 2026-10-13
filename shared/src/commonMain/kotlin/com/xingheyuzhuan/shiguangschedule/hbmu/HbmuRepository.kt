@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.hbmu
 
 import androidx.room3.withWriteTransaction
@@ -28,7 +29,8 @@ class HbmuRepository(
     private var activePassword = saved.password
     private val state = MutableStateFlow(HbmuState(
         account = saved.account, semester = saved.semester.ifBlank { defaultSemester() },
-        remember = saved.remember, autoSync = saved.autoSync, lastSync = saved.lastSync, recordCount = saved.recordCount
+        remember = saved.remember, autoSync = saved.autoSync, lastSync = saved.lastSync, recordCount = saved.recordCount,
+        displayName = saved.displayName, signedIn = saved.signedIn || (saved.account.isNotBlank() && saved.lastSync > 0)
     ))
     val uiState = state.asStateFlow()
 
@@ -57,10 +59,10 @@ class HbmuRepository(
     suspend fun signIn(account: String, password: String, code: String, remember: Boolean, autoSync: Boolean) = operation {
         require(account.isNotBlank() && password.isNotBlank()) { "请填写学号和教务密码" }
         activePassword = password
-        state.update { it.copy(account = account.trim(), remember = remember, autoSync = autoSync, connected = false, message = "正在登录教务系统…") }
+        state.update { it.copy(account = account.trim(), remember = remember, autoSync = autoSync, connected = false, signedIn = false, displayName = "", message = "正在登录教务系统…") }
         if (code.isBlank()) automaticLogin(account.trim(), password)
         else gateway.login(account.trim(), password, code.trim())
-        state.update { it.copy(connected = true, captcha = null) }
+        state.update { it.copy(connected = true, signedIn = true, captcha = null) }
         persist()
         loadTerms()
         syncInternal()
@@ -85,13 +87,14 @@ class HbmuRepository(
 
     private suspend fun loadTerms() {
         val terms = gateway.terms()
-        state.update { current -> current.copy(terms = terms, semester = when {
+        state.update { current -> current.copy(terms = terms, displayName = gateway.displayName().ifBlank { current.displayName }, semester = when {
             terms.isEmpty() -> current.semester
             !termChosen -> terms.firstOrNull { it.selected }?.code ?: current.semester
             terms.none { it.code == current.semester } -> terms.first().code
             else -> current.semester
         }) }
         if (terms.isNotEmpty()) termChosen = true
+        persist()
     }
 
     suspend fun selectSemester(code: String) {
@@ -107,6 +110,14 @@ class HbmuRepository(
 
     private suspend fun syncInternal() {
         state.update { it.copy(message = "正在核对并同步整学期课表…") }
+        if (state.value.terms.isEmpty()) {
+            try { loadTerms() } catch (e: HbmuSessionExpired) {
+                state.update { it.copy(connected = false) }
+                require(state.value.remember && activePassword.isNotBlank()) { "登录已过期，请在账号页重新登录" }
+                automaticLogin(state.value.account, activePassword)
+                loadTerms()
+            }
+        }
         val semester = state.value.semester
         require(semester.matches(Regex("[0-9]{6}"))) { "请选择有效学期" }
         var body = try { gateway.courses(semester, 1000) } catch (e: HbmuSessionExpired) {
@@ -136,7 +147,7 @@ class HbmuRepository(
         }
         val app = settings.getAppSettingsOnce()
         settings.insertOrUpdateAppSettings(app.copy(currentCourseTableId = tableId))
-        state.update { it.copy(connected = true, lastSync = Clock.System.now().toEpochMilliseconds(),
+        state.update { it.copy(connected = true, signedIn = true, lastSync = Clock.System.now().toEpochMilliseconds(),
             recordCount = parsed.total, message = "已同步 ${parsed.total} 次排课，可离线查看", captcha = null) }
         persist()
     }
@@ -157,13 +168,13 @@ class HbmuRepository(
         activePassword = ""
         saved = HbmuSavedAccount(remember = state.value.remember, autoSync = state.value.autoSync, semester = state.value.semester)
         gateway.saveAccount(saved)
-        state.update { it.copy(account = "", connected = false, captcha = null, error = null, message = "已退出登录，本地课表仍可查看") }
+        state.update { it.copy(account = "", connected = false, signedIn = false, displayName = "", captcha = null, error = null, message = "已退出登录，本地课表仍可查看") }
     }
 
     private fun persist() {
         val current = state.value
         saved = HbmuSavedAccount(current.account, if (current.remember) activePassword else "", current.remember,
-            current.autoSync, current.semester, current.lastSync, current.recordCount)
+            current.autoSync, current.semester, current.lastSync, current.recordCount, current.displayName, current.signedIn)
         gateway.saveAccount(saved)
     }
 }

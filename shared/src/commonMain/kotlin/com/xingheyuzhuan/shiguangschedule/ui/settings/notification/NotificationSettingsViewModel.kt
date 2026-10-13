@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.settings.notification
 
 import androidx.lifecycle.ViewModel
@@ -36,8 +37,11 @@ sealed interface NotificationDialogType {
 data class NotificationSettingsUiState(
     val reminderEnabled: Boolean = false,
     val remindBeforeMinutes: Int = 15,
+    val schedulePreviewEnabled: Boolean = false,
+    val schedulePreviewHour: Int = 20,
     val isLoading: Boolean = false,
     val exactAlarmStatus: Boolean = false,
+    val notificationAllowed: Boolean = true,
     val dndPermissionStatus: Boolean = false,
     val autoModeEnabled: Boolean = false,
     val autoControlMode: AutoControlMode = AutoControlMode.DND,
@@ -71,6 +75,8 @@ class NotificationSettingsViewModel(
                 _uiState.value = _uiState.value.copy(
                     reminderEnabled = settings.reminderEnabled,
                     remindBeforeMinutes = settings.remindBeforeMinutes,
+                    schedulePreviewEnabled = settings.schedulePreviewEnabled,
+                    schedulePreviewHour = settings.schedulePreviewHour,
                     autoModeEnabled = settings.autoModeEnabled,
                     autoControlMode = settings.autoControlMode,
                     compatWearableSync = settings.compatWearableSync
@@ -100,6 +106,8 @@ class NotificationSettingsViewModel(
         _uiState.value = _uiState.value.copy(exactAlarmStatus = hasPermission)
     }
 
+    fun updateNotificationStatus(allowed: Boolean) { _uiState.value = _uiState.value.copy(notificationAllowed = allowed) }
+
     /**
      * 更新勿扰权限允许状态
      */
@@ -114,6 +122,13 @@ class NotificationSettingsViewModel(
         viewModelScope.launch {
             val currentSettings = appSettingsRepository.getAppSettings().first()
             appSettingsRepository.insertOrUpdateAppSettings(currentSettings.copy(reminderEnabled = isEnabled))
+        }
+    }
+
+    fun updateSchedulePreview(enabled: Boolean, hour: Int = _uiState.value.schedulePreviewHour) {
+        viewModelScope.launch {
+            val settings = appSettingsRepository.getAppSettingsOnce()
+            appSettingsRepository.insertOrUpdateAppSettings(settings.copy(schedulePreviewEnabled = enabled, schedulePreviewHour = hour.coerceIn(0, 23)))
         }
     }
 

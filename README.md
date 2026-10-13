@@ -1,131 +1,60 @@
-<div align="center">
+<!-- Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained. -->
+# 课程表 · 学习项目
 
-# 拾光课程表
+面向 HBMU 课表场景的个人 Android 开发学习与研究项目，基于 [拾光课程表 v2.1.0](https://github.com/ShiGuangSchedule/shiguangschedule/releases/tag/v2.1.0) 改造。保留完整上游 Git 历史、作者署名与 Apache 2.0 许可证，由 AconHol 独立维护。
 
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/XingHeYuZhuan/shiguangschedule/total)  ![GitHub License](https://img.shields.io/github/license/XingHeYuZhuan/shiguangschedule)  ![GitHub Repo stars](https://img.shields.io/github/stars/XingHeYuZhuan/shiguangschedule)
+> **学习用途与非官方声明**
+>
+> 本项目的发布目的仅为软件开发学习、技术交流与研究，不代表学校或系统运营方，不是学校官方产品，也未获得学校的官方背书。请仅处理本人有权使用的数据，并遵守适用规则和必要授权。学习用途声明不替代授权，也不免除依法应承担的责任。
+>
+> **开发者承诺绝不会私自盗取、收集、留存、出售或分享用户的账号、密码、姓名、课表等个人信息。应用没有开发者的数据收集服务器，不会将这些信息上传给开发者。** 账号与课表保存在用户设备；用户主动配置的备份、导出和分享由用户自己控制。
 
-<a href="https://hellogithub.com/repository/XingHeYuZhuan/shiguangschedule" target="_blank"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=9f09baa3931a4f79940100829d4d0ca4&claim_uid=TRP24EpKZ5sx68l&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-<a href="https://trendshift.io/repositories/45835?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-45835" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/45835/daily?language=Kotlin" alt="XingHeYuZhuan%2Fshiguangschedule | Trendshift" width="250" height="55"/></a>
+请先阅读 [完整学习用途与使用边界声明](DISCLAIMER.md)、[隐私承诺](PRIVACY.md) 与 [安全反馈说明](SECURITY.md)。公开说明不提供相关接口目录或数据获取协议教程。
 
-#### 与我们交流和讨论 ![](https://img.shields.io/badge/QQ_频道-pd68794181-blue)
+## 下载
 
-本仓库为拾光课程表（shiguangschedule）项目的主仓库，包含软件的全部源代码及相关资源。项目采用开源模式，欢迎社区开发者参与贡献和适配。
+[下载 APK · GitHub Releases](https://github.com/AconHol/hbmu-schedule/releases)
 
-</div>  
+Release 提供 `arm64-v8a`、`armeabi-v7a`、`x86_64` 与通用版 APK、源码包及 SHA-256 校验文件。现代 ARM64 手机使用 `arm64-v8a`，不确定架构时使用通用版；Android 模拟器可使用 `x86_64`。最低支持 Android 8.0。
 
+首个公开版本为 `2.1.0-hbmu.4` 预发布版。构建、18 项单元测试、签名和 lint 检查已通过；Android 实机安装、权限弹窗与通知实际送达尚未完成设备验证。
 
-## 预览图
-| 周课表页面(支持长按调整课程块位置或者高度) | 课表页面个性化配置(深色模式演示) | 小组件选择 |
-| :---: | :---: | :---: |
-| ![图片1](/picture/Screenshot_1.png) | ![图片2](/picture/Screenshot_2.png) | ![图片3](/picture/Screenshot_3.png) |
+## 界面
 
-## 项目定位
+下图使用完全虚构的演示课表、账号与教师信息，由共享 Compose 页面渲染，不是 Android 实机截图。
 
-拾光课程表是一款面向中国高校师生的课程表管理工具，支持通过适配脚本导入各类教务系统课程数据，方便用户高效管理个人课表。项目注重开放性和可扩展性，鼓励社区开发者参与适配和功能完善。
+![课程表界面演示](docs/ui-preview.jpg)
 
+## 功能
 
-## 关于项目版本
-> [!WARNING]
-> 从**2.x**版本开始项目已迁移到Compose Multiplatform多平台框架  
-> 不再区分正式版本和开发者版本，开发者功能通过在**更多**页面点击应用图标**5次**启用
-> - Android：支持Android 8.0 +的系统版本
->   - *主支维护*
-> - Desktop (JVM)：支持Windows、macOS、Linux
->   - *主支维护*
->   - **当前平台处于实验性阶段**
-> - iOS：本仓库dev_ios分支提供实验性基础支持
->   - *分支维护*
->   - **需自行编译**
-> - 其他平台适配正在开发中
+- Material 3 Expressive 风格，磨砂浮动底栏、浅色与深色主题。
+- 今日课程、每周课表、周次切换与明日安排。
+- 账号卡片、保持登录、课表更新与离线查看。
+- 上课前提醒、前一晚课表预告；首次完成课表设置后主动请求通知权限。
+- 保留课程编辑、课表管理、作息管理、小组件、导入导出和用户自选的备份功能。
 
-## 功能介绍
+请在作息管理中校准实际上下课时间。课程安排以学校官方信息为准，提醒不应作为唯一的上课依据。
 
-### 主页面
-- 今日课表
-  > 顾名思义就是看当天的课程
-- 课表
-  > 显示一周的课程，左右滑动可以切换周次，点击顶部周次标题会弹出底部选择器用于快速跳转周次(会标记当前日期所在周)
-- 我的
-  > 也就是设置页面，这里放置所有的配置项
+## 隐私与数据控制
 
-#### 深色适配
-- 目前软件所有可以实现深色适配的位置都已全部实现深色适配
-- 小组件也拥有深色适配
+账号与课表默认保存在用户设备。保持登录的信息使用 Android Keystore 在本机加密保存，登录凭据排除在系统备份与设备迁移之外。应用不包含开发者的数据收集、统计分析或广告追踪服务。
 
-#### 课表配置
-- 支持时间列表与课表绑定,切换不同的课表自动改变时间
-- 课表支持独立定义，一周的起始日是周一还是周日
-  
-#### 小组件  
-- 多种功能小组件任其选择  
-  > [全部小组件预览图](/picture/all_widget.png)。
-- 小组件支持明日预告
-  > 超小小组件不支持明日预告,因为只有2x1的尺寸,设计上是用来展示最近一节课的消息  
+备份与导出属于用户主动选择的功能，不会把数据交给开发者。Android 系统备份由设备设置控制；用户选择的外部服务受对应服务方的规则与隐私政策约束。上述承诺针对本仓库发布的版本，不延伸到他人修改后重新分发的软件。
 
-#### 全局课程管理  
-- 独立的课程管理页面将所有课程以最直接的方式全局显示出来，支持快速添加以及修改  
+## 源码与构建
 
-#### 课表页面个性化配置  
-- 支持自定义背景图片  
-- 支持调整课表格子高度、圆角、间距及透明度  
-- 支持自定义课程块颜色  
-- 支持调整课程块内容样式  
-- 更多功能等你去发现...
+需要 JDK 21、Android SDK 37 和 Gradle 9.7.1；配置本机 `local.properties` 的 SDK 路径后运行：
 
-#### 课程导入与导出  
-- json文件导入与导出，方便课表备份  
-- 通用ics文件导出，支持多种设备以及平台的日程导入 
-- 在支持的设备上支持同步日历日程账户
-- 支持WebDAV云备份和同步
-- 教务导入，开源适配仓库开发者深度适配学校作息时间，一键导入  
-  > 识别课程与对应作息时间是适配的基础功能，更高级的自动配置开学日期等 与开发者是否适配学校可能拥有的接口有关  
+```powershell
+.\gradlew.bat :shared:testAndroidHostTest :androidApp:assembleRelease --no-configuration-cache
+```
 
-#### 课程提醒相关  
-- 课程提醒与上课自动化开启勿扰或者静音  
-- 获取整年节假日数据防止节假日课程打扰  
-  
-#### 语言支持  
-- 简体中文 
-- 繁体中文 
-- 英语  
------
+正式 APK 在维护者本机签名。自行构建 release 时应提供自己的 `HBMU_KEYSTORE_PATH`、`HBMU_STORE_PASSWORD` 与别名 `hbmu`，否则项目使用开发调试签名，不能覆盖维护者签名的版本。维护者的签名私钥及密码不会进入仓库或 GitHub Actions。
 
-## 如何参与
+本仓库提供手动运行的 Android 构建检查。使用说明见 [HBMU-README.md](HBMU-README.md)，改动说明见 [APP-UPDATE.md](APP-UPDATE.md)。
 
-1. Fork 本仓库，提交你的改进或教务适配使用的可调用组件。
-2. 提交 Pull Request，等待审核合并(main分支已经开启分支保护,提交需要提交到dev分支)。
-3. 如有问题或建议，欢迎在 GitHub 提交 Issue 或加入社区讨论。
+## 来源与许可
 
-## 相关链接
+上游：ShiGuangSchedule/shiguangschedule，基线提交 `feabb68f75c4058319b449287980b5f645eb8d61`，v2.1.0。原作者与贡献者的版权和署名保留；本项目不是上游官方发行版。
 
-- 项目主页：[https://github.com/XingHeYuZhuan/shiguangschedule](https://github.com/XingHeYuZhuan/shiguangschedule)
-- 适配脚本仓库：[https://github.com/XingHeYuZhuan/shiguang_warehouse](https://github.com/XingHeYuZhuan/shiguang_warehouse)
-- 查看如何适配,Wiki：[https://github.com/XingHeYuZhuan/shiguangschedule/wiki](https://github.com/XingHeYuZhuan/shiguangschedule/wiki)
-- 浏览器测试插件:[https://github.com/XingHeYuZhuan/shiguang_Tester](https://github.com/XingHeYuZhuan/shiguang_Tester)  
-
-- ###### 由[@Jursin](https://github.com/Jursin)主导并维护的网站:[https://sgschedule.jursin.top/](https://sgschedule.jursin.top/)  
----
-
-如有问题或建议，欢迎提交 Issue 或 PR。
-
-## 贡献  
-欢迎任何人提交你的贡献  
-### 教务适配贡献  
-<a href="https://github.com/XingHeYuZhuan/shiguang_warehouse/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=XingHeYuZhuan/shiguang_warehouse" />
-</a>
-
-### 软件开发贡献  
-<a href="https://github.com/XingHeYuZhuan/shiguangschedule/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=XingHeYuZhuan/shiguangschedule" />
-</a>
-
-
-## Star 历史
-<a href="https://www.star-history.com/?repos=XingHeYuZhuan%2Fshiguangschedule&type=timeline&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=XingHeYuZhuan/shiguangschedule&type=timeline&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=XingHeYuZhuan/shiguangschedule&type=timeline&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=XingHeYuZhuan/shiguangschedule&type=timeline&legend=top-left" />
- </picture>
-</a>
+应用源码沿用 [Apache 2.0](LICENSE)，第三方组件的版权与许可保留，详见 [NOTICE](NOTICE)。学习研究目的不额外限制开源许可证授予的合法源码权利；源码许可不授予学校系统、账号、商标或他人数据的使用权限。

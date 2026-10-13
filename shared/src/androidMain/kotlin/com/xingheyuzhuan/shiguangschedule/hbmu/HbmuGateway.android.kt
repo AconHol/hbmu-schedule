@@ -1,3 +1,4 @@
+// Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.hbmu
 
 import android.content.Context
@@ -34,6 +35,7 @@ internal class AndroidHbmuGateway(private val context: Context) : HbmuGateway {
     private val crypto = SecureCrypto()
     private val json = Json { ignoreUnknownKeys = true }
     private val ocr by lazy { HbmuOfflineOcr(context) }
+    private var studentName = ""
 
     @Serializable
     private data class StoredCookie(val name: String, val value: String, val path: String?, val secure: Boolean, val expires: Long)
@@ -146,8 +148,11 @@ internal class AndroidHbmuGateway(private val context: Context) : HbmuGateway {
     override suspend fun terms(): List<HbmuTerm> = withContext(Dispatchers.IO) {
         val html = request("/xsgrkbcx!getXsgrbkList.action").toString(Charsets.UTF_8)
         if (html.contains("id=\"login-form\"") || html.contains("/new/login")) throw HbmuSessionExpired()
+        studentName = HbmuProfileParser.nameFromHtml(html)
         HbmuTermParser.parse(html)
     }
+
+    override fun displayName(): String = studentName
 
     override suspend fun courses(semester: String, rows: Int): String = withContext(Dispatchers.IO) {
         require(semester.matches(Regex("[0-9]{6}")) && rows in 1..10000)
