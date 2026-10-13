@@ -19,6 +19,11 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven {
+            name = "offlineCaptchaRuntime"
+            url = uri("$rootDir/third_party/maven")
+            content { includeModule("cn.hbmu.thirdparty", "onnxruntime-captcha") }
+        }
         // The domestic mirror currently has metadata but no JVM binary for kgit 1.0.3.
         mavenCentral { content { includeGroup("io.github.xingheyuzhuan") } }
         maven("https://maven.aliyun.com/repository/google")

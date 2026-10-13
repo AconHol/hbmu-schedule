@@ -1,0 +1,115 @@
+{
+  "runtime": "1.22.0",
+  "labelled_synthetic": 512,
+  "real_samples": 1,
+  "models": {
+    "original": {
+      "bytes": 54088400,
+      "sha256": "33b5cd351ee94e73a6bf8fa18c415ed8b819b3ffd342e267c30d8ad8334e34e8",
+      "correct": 436,
+      "total": 512,
+      "baseline_agreement": 513,
+      "median_ms": 8.45,
+      "real_agreement": 1
+    },
+    "alnum-conv-int8": {
+      "bytes": 17895227,
+      "sha256": "6a6286895dfbd3aa46a359bf35a706a8416fa2cef922ac4e046242dd7dddb621",
+      "correct": 440,
+      "total": 512,
+      "baseline_agreement": 496,
+      "median_ms": 6.42,
+      "real_agreement": 1
+    },
+    "alnum-dynamic-int8": {
+      "bytes": 7927654,
+      "sha256": "391aa1004cdd6913eceff504ad741b0883cefdb30954b45157b60477daad0704",
+      "correct": 443,
+      "total": 512,
+      "baseline_agreement": 501,
+      "median_ms": 4.02,
+      "real_agreement": 1
+    },
+    "alnum-fp32": {
+      "bytes": 20579094,
+      "sha256": "c020e074c34be2bf8e4fec3e2b0f4ee631edd959a2b93c987a400c00259dfc9e",
+      "correct": 443,
+      "total": 512,
+      "baseline_agreement": 502,
+      "median_ms": 5.73,
+      "real_agreement": 1
+    },
+    "alnum-hybrid": {
+      "bytes": 6128181,
+      "sha256": "4517076af1d51108600c192768130b004b6ac49eec41389543b51446a91e96b9",
+      "correct": 443,
+      "total": 512,
+      "baseline_agreement": 500,
+      "median_ms": 4.23,
+      "real_agreement": 1
+    },
+    "alnum-mixed-int8": {
+      "bytes": 5241639,
+      "sha256": "539808c3c644bf7cefe52d483a8057a4dba91573f5f6d4efe3a7ee6e23842857",
+      "correct": 442,
+      "total": 512,
+      "baseline_agreement": 496,
+      "median_ms": 4.67,
+      "real_agreement": 1
+    }
+  },
+  "real_samples_labelled": 1,
+  "real_correct": {
+    "original": 1,
+    "alnum-conv-int8": 1,
+    "alnum-dynamic-int8": 1,
+    "alnum-fp32": 1,
+    "alnum-hybrid": 1,
+    "alnum-mixed-int8": 1
+  },
+  "selected_model": "alnum-mixed-int8",
+  "ort_conversion_identical_samples": 513,
+  "head_logits_equivalent_widths": [
+    16,
+    64,
+    112,
+    179,
+    256,
+    1024
+  ],
+  "comparison_to_sliced_fp32": {
+    "regressions": 4,
+    "fixes": 3
+  },
+  "limitations": "512 deterministic synthetic images and only one labelled real image; no Android device verification; no claim of general school-captcha accuracy.",
+  "model_format": "ORT",
+  "ort_version": "1.22.0",
+  "packaged_model_bytes": 5290848,
+  "packaged_model_sha256": "c727dff3882f2f5ccc4628171fb64d653593bfb82e9d4e11c92157c1aedcc0f5",
+  "model_generation_runtime": "1.22.0",
+  "reduced_c_api_images": 513,
+  "reduced_java_jni_images": 513,
+  "reduced_c_api_predictions_identical": true,
+  "reduced_java_jni_predictions_identical": true,
+  "windows_java_loader_option": "onnxruntime.native.onnxruntime.skip=true; core loaded as JNI dependency",
+  "packaged_output_shape": [
+    "sequence",
+    1,
+    37
+  ],
+  "synthetic_corpus": {
+    "seed": 221,
+    "fonts": [
+      "arial.ttf",
+      "arialbd.ttf",
+      "times.ttf",
+      "timesbd.ttf",
+      "calibri.ttf",
+      "calibrib.ttf",
+      "consola.ttf",
+      "tahoma.ttf"
+    ],
+    "width": 112,
+    "height": 40
+  }
+}

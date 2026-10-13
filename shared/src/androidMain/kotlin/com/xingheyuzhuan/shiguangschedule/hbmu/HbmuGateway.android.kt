@@ -162,14 +162,15 @@ internal class AndroidHbmuGateway(private val context: Context) : HbmuGateway {
     }
 }
 
-/** ddddocr 1.6.1 common.onnx, CTC decoding; no captcha images leave the device. */
+/** Restricted ddddocr CTC head + INT8 weights in ORT format. Inference stays on the device. */
 internal class HbmuOfflineOcr(context: Context) {
     private val environment = OrtEnvironment.getEnvironment()
     private val charset = Json.parseToJsonElement(context.assets.open("hbmu/charset.json").bufferedReader().use { it.readText() })
         .jsonArray.map { it.jsonPrimitive.content }
     private val session = OrtSession.SessionOptions().use { options ->
         options.setIntraOpNumThreads(2)
-        environment.createSession(context.assets.open("hbmu/common.onnx").use { it.readBytes() }, options)
+        options.addConfigEntry("session.load_model_format", "ORT")
+        environment.createSession(context.assets.open("hbmu/captcha.ort").use { it.readBytes() }, options)
     }
 
     fun recognize(bytes: ByteArray): String {
