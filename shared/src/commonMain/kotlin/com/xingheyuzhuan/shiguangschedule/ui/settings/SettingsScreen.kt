@@ -511,18 +511,16 @@ private fun SettingItem(
     onClick: (() -> Unit)? = null,
     trailingContent: @Composable () -> Unit = { Icon(icon, contentDescription = null) }
 ) {
-    Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainer) {
     ListItem(
         leadingContent = if (leadingIcon != null) ({ Icon(leadingIcon, null, tint = MaterialTheme.colorScheme.primary) }) else null,
         headlineContent = { Text(title, style = MaterialTheme.typography.bodyLarge) },
         supportingContent = { Text(subtitle, style = MaterialTheme.typography.bodySmall) },
         trailingContent = trailingContent,
-        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = onClick != null) { onClick?.invoke() }
     )
-    }
 }
 
 /**

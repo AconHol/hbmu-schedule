@@ -197,6 +197,8 @@ class StyleSettingsRepository(
 
     suspend fun setStrikeCompletedToday(value: Boolean) = updateStyle { it.copy(strike_completed_today = value) }
 
+    suspend fun setDimCompletedToday(value: Boolean) = updateStyle { it.copy(dim_completed_today = value) }
+
     suspend fun setHideReminderTip(value: Boolean) = updateStyle { it.copy(hide_reminder_tip = value) }
 
     suspend fun setHideEmptyDays(hide: Boolean) = updateStyle {

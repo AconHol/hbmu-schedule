@@ -47,12 +47,13 @@ fun ExpressiveSettingsListItem(headlineContent: @Composable () -> Unit, modifier
     leadingContent: @Composable (() -> Unit)? = null, trailingContent: @Composable (() -> Unit)? = null,
     colors: ListItemColors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     tonalElevation: Dp = 0.dp, shadowElevation: Dp = 0.dp) {
-    Surface(Modifier.fillMaxWidth().padding(vertical = 2.dp).clip(RoundedCornerShape(20.dp)).then(modifier),
-        color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(20.dp)) {
-        ListItem(headlineContent, overlineContent = overlineContent, supportingContent = supportingContent,
-            leadingContent = leadingContent, trailingContent = trailingContent, colors = colors,
-            tonalElevation = tonalElevation, shadowElevation = shadowElevation)
-    }
+    // Let the caller's container or ListItem paint the background once. A second Surface
+    // with inset padding exposes a differently coloured rim in nested settings cards.
+    ListItem(headlineContent,
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).then(modifier),
+        overlineContent = overlineContent, supportingContent = supportingContent,
+        leadingContent = leadingContent, trailingContent = trailingContent, colors = colors,
+        tonalElevation = tonalElevation, shadowElevation = shadowElevation)
 }
 
 @Composable

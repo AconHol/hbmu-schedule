@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.platform.testTag
 import com.xingheyuzhuan.shiguangschedule.ui.components.CourseTemporalStatus
 import com.xingheyuzhuan.shiguangschedule.ui.components.courseTemporalStatus
@@ -103,19 +102,31 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
                 val courseState = courseTemporalStatus(today, model.startTime, model.endTime, now)
                 val finished = courseState == CourseTemporalStatus.COMPLETED
                 val ongoing = courseState == CourseTemporalStatus.ONGOING
-                Surface(onClick = { detail = model }, modifier = Modifier.fillMaxWidth(), shape = connectedCourseShape(index, courses.size), color = if (ongoing) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer, contentColor = if (ongoing) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer) {
+                val muted = finished && gridStyle.dimCompletedToday
+                val rowColor = when {
+                    muted -> MaterialTheme.colorScheme.surfaceContainer
+                    ongoing -> MaterialTheme.colorScheme.primaryContainer
+                    else -> MaterialTheme.colorScheme.secondaryContainer
+                }
+                val rowTextColor = when {
+                    muted -> MaterialTheme.colorScheme.onSurfaceVariant
+                    ongoing -> MaterialTheme.colorScheme.onPrimaryContainer
+                    else -> MaterialTheme.colorScheme.onSecondaryContainer
+                }
+                Surface(onClick = { detail = model }, modifier = Modifier.fillMaxWidth(), shape = connectedCourseShape(index, courses.size), color = rowColor, contentColor = rowTextColor) {
                     Row(Modifier.heightIn(min = 92.dp).padding(horizontal = 18.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Column(Modifier.width(60.dp)) {
                             Text(model.startTime ?: "待设置", style = MaterialTheme.typography.titleMedium)
-                            Text(model.endTime ?: "", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(model.endTime ?: "", style = MaterialTheme.typography.bodySmall, color = rowTextColor.copy(alpha = .78f))
                             Spacer(Modifier.height(8.dp))
-                            Text(if (ongoing) "正在上课" else if (finished) "已结束" else "第${model.course.startSection ?: ""}—${model.course.endSection ?: ""}节", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .72f))
+                            Text(if (ongoing) "正在上课" else if (finished) "已结束" else "第${model.course.startSection ?: ""}—${model.course.endSection ?: ""}节", style = MaterialTheme.typography.labelSmall, color = rowTextColor.copy(alpha = .78f))
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(model.course.name, modifier = Modifier.testTag("today-course-title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, textDecoration = if (finished && gridStyle.strikeCompletedToday) TextDecoration.LineThrough else TextDecoration.None)
-                            Text(listOf(model.course.position.ifBlank { "教室待公布" }, model.course.teacher).filter { it.isNotBlank() }.joinToString(" · "), modifier = Modifier.testTag("today-course-details"), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .78f))
+                            CourseNameText(model.course.name, struck = finished && gridStyle.strikeCompletedToday,
+                                modifier = Modifier.testTag("today-course-title"))
+                            Text(listOf(model.course.position.ifBlank { "教室待公布" }, model.course.teacher).filter { it.isNotBlank() }.joinToString(" · "), modifier = Modifier.testTag("today-course-details"), style = MaterialTheme.typography.bodyMedium, color = rowTextColor.copy(alpha = .78f))
                         }
-                        Icon(vectorResource(Res.drawable.chevron_right_24px), null, tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .70f))
+                        Icon(vectorResource(Res.drawable.chevron_right_24px), null, tint = rowTextColor.copy(alpha = .70f))
                     }
                 }
                 }

@@ -1,0 +1,48 @@
+name: 发布 Android 正式版
+run-name: 发布 ${{ inputs.tag }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 已准备好签名 APK 的草稿版本标签
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag }}
+    steps:
+      - name: 检查版本标签
+        shell: bash
+        run: '[[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]'
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 1
+      - name: 获取本机签名的草稿附件
+        shell: bash
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" > releases.json
+          jq -e --arg tag "$TAG" '.[] | select(.tag_name == $tag and .draft == true)' releases.json > draft.json
+          gh release download "$TAG" --dir release-assets
+      - name: 检查附件与源码对应关系
+        shell: bash
+        run: python3 tools/release/check_draft_assets.py release-assets "$TAG"
+      # The signing key stays on the author's computer; only distributable files reach GitHub.
+      - name: 发布正式 Release
+        shell: bash
+        run: |
+          gh release edit "$TAG" --draft=false --prerelease=false --latest --notes-file ".github/release-notes/$TAG.md"
+          gh release view "$TAG" --json url --jq .url >> "$GITHUB_STEP_SUMMARY"

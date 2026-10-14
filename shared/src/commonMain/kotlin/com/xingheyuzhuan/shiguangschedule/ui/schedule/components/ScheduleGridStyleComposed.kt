@@ -54,6 +54,7 @@ data class ScheduleGridStyleComposed(
     val dimCompletedBackground: Boolean = true,
     val highlightOngoing: Boolean = true,
     val strikeCompletedToday: Boolean = true,
+    val dimCompletedToday: Boolean = true,
     val hideReminderTip: Boolean = false,
 ) {
     companion object {
@@ -82,6 +83,7 @@ data class ScheduleGridStyleComposed(
                 dimCompletedBackground = this.dimCompletedBackground,
                 highlightOngoing = this.highlightOngoing,
                 strikeCompletedToday = this.strikeCompletedToday,
+                dimCompletedToday = this.dimCompletedToday,
                 hideReminderTip = this.hideReminderTip,
                 hideSectionTime = this.hideSectionTime,
                 hideDateUnderDay = this.hideDateUnderDay,

@@ -241,6 +241,7 @@ fun SettingsListContent(
         Text("这些配色仅用于周课表，按课程日期和实际起止时间更新。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text("主页 · 当天课程", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
         StyleSwitchItem("划掉已结束课程的名称", currentStyle.strikeCompletedToday) { viewModel.updateStrikeCompletedToday(it) }
+        StyleSwitchItem("已结束的当天课程变灰", currentStyle.dimCompletedToday) { viewModel.updateDimCompletedToday(it) }
         StyleSwitchItem("显示提醒设置提示", !currentStyle.hideReminderTip) { viewModel.updateHideReminderTip(!it) }
 
         ColorPickerItem(

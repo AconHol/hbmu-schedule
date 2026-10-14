@@ -14,7 +14,7 @@ kotlin {
     jvmToolchain(21)
 }
 
-val appVersion = "2.4.0"
+val appVersion = "2.4.1"
 val appBaseName = "shiguangschedule"
 
 dependencies {
@@ -58,6 +58,15 @@ tasks.register<JavaExec>("renderHbmuPreview") {
     description = "Render the shared HBMU Compose screens without opening a desktop window."
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("com.xingheyuzhuan.shiguangschedule.PreviewHarnessKt")
+    systemProperty("java.awt.headless", "true")
+    systemProperty("user.timezone", "Asia/Shanghai")
+}
+
+tasks.register<JavaExec>("renderRepairPreview") {
+    group = "preview"
+    description = "Render the three UI repairs using fictional course data."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.xingheyuzhuan.shiguangschedule.RepairPreviewHarnessKt")
     systemProperty("java.awt.headless", "true")
     systemProperty("user.timezone", "Asia/Shanghai")
 }

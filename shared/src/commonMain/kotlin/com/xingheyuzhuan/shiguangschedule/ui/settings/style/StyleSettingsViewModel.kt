@@ -258,6 +258,8 @@ class StyleSettingsViewModel(
 
     fun updateStrikeCompletedToday(value: Boolean) { viewModelScope.launch { styleRepository.setStrikeCompletedToday(value) } }
 
+    fun updateDimCompletedToday(value: Boolean) { viewModelScope.launch { styleRepository.setDimCompletedToday(value) } }
+
     fun updateHideReminderTip(value: Boolean) { viewModelScope.launch { styleRepository.setHideReminderTip(value) } }
 
     fun updateHideEmptyDays(hide: Boolean) = viewModelScope.launch {

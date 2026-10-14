@@ -33,7 +33,7 @@ class DesktopAppModule {
 
     @Single
     @Named("AppVersionName")
-    fun provideAppVersionName(): String = "2.4.0"
+    fun provideAppVersionName(): String = "2.4.1"
 }
 
 @KoinApplication(modules = [DesktopAppModule::class])

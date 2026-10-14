@@ -233,6 +233,7 @@ fun ScheduleGrid(
                 modifier = Modifier
                     .fillMaxSize()
                     .onSizeChanged { state.viewportHeightPx = (it.height - navigationBottomPx).coerceAtLeast(0f) }
+                    .clipScheduleViewport(style.timeColumnWidth, displayDaysCount)
                     .verticalScroll(state = state.gridScrollState, enabled = state.expandedItem == null)
                     .padding(bottom = navigationBottom)
             ) {

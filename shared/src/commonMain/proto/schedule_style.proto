@@ -107,4 +107,5 @@ message ScheduleGridStyleProto {
   optional bool highlight_ongoing = 32;
   optional bool strike_completed_today = 33;
   optional bool hide_reminder_tip = 34;
+  optional bool dim_completed_today = 35;
 }

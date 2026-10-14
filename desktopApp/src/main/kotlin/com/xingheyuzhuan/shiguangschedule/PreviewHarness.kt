@@ -276,11 +276,15 @@ fun main(args: Array<String>): Unit = runBlocking {
         }
         settle(statusScene)
         println("Temporal QA: visible titles=${taggedNodes(statusScene, "today-course-title").size}, decorations=${taggedNodes(statusScene, "today-course-title").map { decoration(it) }}")
-        check(taggedNodes(statusScene, "today-course-title").any { decoration(it) == TextDecoration.LineThrough }) { "Completed course name must be struck through" }
+        check(taggedNodes(statusScene, "today-course-title").any {
+            it.config.getOrNull(SemanticsProperties.StateDescription) == "已结束，名称已划线"
+        }) { "Completed course name must be struck through" }
         check(taggedNodes(statusScene, "today-course-details").all { decoration(it) != TextDecoration.LineThrough }) { "Classroom and teacher must not be struck through" }
         styles.setStrikeCompletedToday(false)
         settle(statusScene)
-        check(taggedNodes(statusScene, "today-course-title").all { decoration(it) != TextDecoration.LineThrough })
+        check(taggedNodes(statusScene, "today-course-title").all {
+            it.config.getOrNull(SemanticsProperties.StateDescription) != "已结束，名称已划线"
+        })
         styles.setStrikeCompletedToday(true)
         val scroller = verticalScroller(statusScene)
         check(scroller.config.getOrNull(SemanticsActions.ScrollBy)?.action?.invoke(0f, 100000f) == true)
