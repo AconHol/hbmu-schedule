@@ -189,6 +189,16 @@ class StyleSettingsRepository(
     }
 
     /** 设置是否自动隐藏无课日期 */
+    suspend fun setDimCompletedText(value: Boolean) = updateStyle { it.copy(dim_completed_text = value) }
+
+    suspend fun setDimCompletedBackground(value: Boolean) = updateStyle { it.copy(dim_completed_background = value) }
+
+    suspend fun setHighlightOngoing(value: Boolean) = updateStyle { it.copy(highlight_ongoing = value) }
+
+    suspend fun setStrikeCompletedToday(value: Boolean) = updateStyle { it.copy(strike_completed_today = value) }
+
+    suspend fun setHideReminderTip(value: Boolean) = updateStyle { it.copy(hide_reminder_tip = value) }
+
     suspend fun setHideEmptyDays(hide: Boolean) = updateStyle {
         it.copy(hide_empty_days = hide)
     }

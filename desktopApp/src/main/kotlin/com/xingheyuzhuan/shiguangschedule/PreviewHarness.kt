@@ -4,6 +4,14 @@ package com.xingheyuzhuan.shiguangschedule
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.style.TextDecoration
+import com.xingheyuzhuan.shiguangschedule.ui.components.LocalCourseNowOverride
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.Modifier
@@ -30,6 +38,7 @@ import java.io.File
 /** Headless layout QA for the shared Compose UI. No network requests or credentials are used. */
 @OptIn(ExperimentalComposeUiApi::class)
 fun main(args: Array<String>): Unit = runBlocking {
+    Thread.setDefaultUncaughtExceptionHandler { _, error -> error.printStackTrace(); kotlin.system.exitProcess(1) }
     startKoin<DesktopAppConfig>()
     val koin = GlobalContext.get()
     // Baseline screenshots exercise the full configured week; hiding has dedicated cases below.
@@ -47,6 +56,13 @@ fun main(args: Array<String>): Unit = runBlocking {
         val state = HbmuRepository::class.java.getDeclaredField("state").apply { isAccessible = true }.get(hbmu) as MutableStateFlow<HbmuState>
         state.value = state.value.copy(account = "20260001", displayName = "湖医学子", signedIn = true, connected = true, semester = "202601", lastSync = System.currentTimeMillis(), recordCount = parsed.total,
             terms = listOf(HbmuTerm("202601", "2026—2027 学年 · 第一学期")), message = "已同步 ${parsed.total} 次排课，可离线查看")
+    }
+    val previewDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val previewNow = LocalDateTime.parse("${previewDate}T12:00:00")
+    @Composable fun PreviewPage(destination: Destination) {
+        CompositionLocalProvider(LocalCourseNowOverride provides previewNow) {
+            Surface(Modifier.fillMaxSize()) { AppNavigation(destination) }
+        }
     }
     val output = File(System.getenv("HBMU_PREVIEW_OUTPUT") ?: "build/hbmu-preview").apply { mkdirs() }
     withContext(Dispatchers.Main) {
@@ -105,11 +121,15 @@ fun main(args: Array<String>): Unit = runBlocking {
             }
         }
         for ((name, destination) in listOf("today" to Destination.TodaySchedule, "week" to Destination.CourseSchedule, "academic" to Destination.Hbmu, "tools" to Destination.Settings,
-            "contributors" to Destination.ContributionList, "theme" to Destination.ThemeSettings, "about" to Destination.MoreOptions)) {
+            "contributors" to Destination.ContributionList, "theme" to Destination.ThemeSettings, "about" to Destination.MoreOptions,
+            "notification" to Destination.NotificationSettings, "language" to Destination.LanguageSettings,
+            "backup" to Destination.BackupAndRestore, "tables" to Destination.ManageCourseTables,
+            "times" to Destination.TimeScheduleManagement, "courses" to Destination.CourseManagementList,
+            "quick" to Destination.QuickActions, "holiday" to Destination.HolidayManagement)) {
             for (dark in listOf(false, true)) {
                 val scene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
                     ShiguangScheduleTheme(darkTheme = dark, dynamicColor = false) {
-                        Surface(Modifier.fillMaxSize()) { AppNavigation(destination) }
+                        PreviewPage(destination)
                     }
                 }
                 repeat(8) { scene.render(System.nanoTime()).close(); delay(100) }
@@ -161,7 +181,7 @@ fun main(args: Array<String>): Unit = runBlocking {
                 for (dark in listOf(false, true)) {
                     val scene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
                         ShiguangScheduleTheme(darkTheme = dark, dynamicColor = false) {
-                            Surface(Modifier.fillMaxSize()) { AppNavigation(Destination.CourseSchedule) }
+                            PreviewPage(Destination.CourseSchedule)
                         }
                     }
                     settle(scene)
@@ -175,7 +195,7 @@ fun main(args: Array<String>): Unit = runBlocking {
         }
         val largeTextScene = ImageComposeScene(width = 720, height = 1600, density = Density(2f, fontScale = 1.6f), coroutineContext = coroutineContext) {
             ShiguangScheduleTheme(darkTheme = false, dynamicColor = false) {
-                Surface(Modifier.fillMaxSize()) { AppNavigation(Destination.CourseSchedule) }
+                PreviewPage(Destination.CourseSchedule)
             }
         }
         settle(largeTextScene)
@@ -204,7 +224,7 @@ fun main(args: Array<String>): Unit = runBlocking {
                     val theme = if (dark) "dark" else "light"
                     val scene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
                         ShiguangScheduleTheme(darkTheme = dark, dynamicColor = false) {
-                            Surface(Modifier.fillMaxSize()) { AppNavigation(Destination.CourseSchedule) }
+                            PreviewPage(Destination.CourseSchedule)
                         }
                     }
                     settle(scene)
@@ -238,10 +258,45 @@ fun main(args: Array<String>): Unit = runBlocking {
             }
         }
         File(output, "week-layout-check.csv").writeText("name,body_top,control,left,top,right,bottom\n" + weekLayouts.joinToString("\n"))
+        // Exercise actual title-only decoration and the persistent dismissible footer hint.
+        fun taggedNodes(scene: ImageComposeScene, tag: String): List<SemanticsNode> {
+            fun find(node: SemanticsNode): List<SemanticsNode> =
+                (if (node.boundsInRoot.width > 0f && node.boundsInRoot.height > 0f && node.config.getOrNull(SemanticsProperties.TestTag) == tag) listOf(node) else emptyList()) + node.children.flatMap { find(it) }
+            return scene.semanticsOwners.flatMap { find(it.unmergedRootSemanticsNode) }
+        }
+        fun decoration(node: SemanticsNode): TextDecoration? {
+            val results = mutableListOf<TextLayoutResult>()
+            check(node.config.getOrNull(SemanticsActions.GetTextLayoutResult)?.action?.invoke(results) == true)
+            return results.first().layoutInput.style.textDecoration
+        }
+        styles.setStrikeCompletedToday(true)
+        styles.setHideReminderTip(false)
+        val statusScene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
+            ShiguangScheduleTheme(darkTheme = false, dynamicColor = false) { PreviewPage(Destination.TodaySchedule) }
+        }
+        settle(statusScene)
+        println("Temporal QA: visible titles=${taggedNodes(statusScene, "today-course-title").size}, decorations=${taggedNodes(statusScene, "today-course-title").map { decoration(it) }}")
+        check(taggedNodes(statusScene, "today-course-title").any { decoration(it) == TextDecoration.LineThrough }) { "Completed course name must be struck through" }
+        check(taggedNodes(statusScene, "today-course-details").all { decoration(it) != TextDecoration.LineThrough }) { "Classroom and teacher must not be struck through" }
+        styles.setStrikeCompletedToday(false)
+        settle(statusScene)
+        check(taggedNodes(statusScene, "today-course-title").all { decoration(it) != TextDecoration.LineThrough })
+        styles.setStrikeCompletedToday(true)
+        val scroller = verticalScroller(statusScene)
+        check(scroller.config.getOrNull(SemanticsActions.ScrollBy)?.action?.invoke(0f, 100000f) == true)
+        settle(statusScene)
+        capture(statusScene, "today-footer-light")
+        click(statusScene, "关闭提醒设置提示")
+        settle(statusScene)
+        check(styles.getStyleOnce().hideReminderTip) { "Closing the hint must persist the hidden state" }
+        capture(statusScene, "today-footer-dismissed-light")
+        statusScene.close()
+        styles.setHideReminderTip(false)
+        println("Temporal QA: name-only strike, independent toggle, persistent footer dismissal passed")
         // Exercise the actual navigation controls, including the reverse direction.
         val navigationScene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
             ShiguangScheduleTheme(darkTheme = false, dynamicColor = false) {
-                Surface(Modifier.fillMaxSize()) { AppNavigation(Destination.TodaySchedule) }
+                PreviewPage(Destination.TodaySchedule)
             }
         }
         repeat(8) { navigationScene.render(System.nanoTime()).close(); delay(100) }
@@ -266,7 +321,7 @@ fun main(args: Array<String>): Unit = runBlocking {
         for (dark in listOf(false, true)) {
             val scene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
                 ShiguangScheduleTheme(darkTheme = dark, dynamicColor = false) {
-                    Surface(Modifier.fillMaxSize()) { AppNavigation(Destination.Hbmu) }
+                    PreviewPage(Destination.Hbmu)
                 }
             }
             repeat(5) { scene.render(System.nanoTime()).close(); delay(100) }

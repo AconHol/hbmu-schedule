@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.HorizontalDivider
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsDivider as HorizontalDivider
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue

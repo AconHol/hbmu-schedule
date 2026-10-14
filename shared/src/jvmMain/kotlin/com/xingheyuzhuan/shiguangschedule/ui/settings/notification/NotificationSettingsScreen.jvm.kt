@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.notification
 
 import androidx.compose.foundation.layout.Column
@@ -8,9 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsDivider as HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -43,42 +44,14 @@ actual fun PlatformGeneralSettingsSection(
     uiState: NotificationSettingsUiState,
     viewModel: NotificationSettingsViewModel
 ) {
-    Column {
-        Text(
-            text = stringResource(Res.string.section_title_general),
-            style = MaterialTheme.typography.titleLarge
-        )
-        Spacer(Modifier.height(8.dp))
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                SettingItemRow(
-                    title = stringResource(Res.string.item_course_reminder),
-                    onClick = { viewModel.updateReminderEnabled(!uiState.reminderEnabled) },
-                    trailing = {
-                        Switch(
-                            checked = uiState.reminderEnabled,
-                            onCheckedChange = { isEnabled ->
-                                viewModel.updateReminderEnabled(isEnabled)
-                            }
-                        )
-                    }
-                )
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                SettingItemRow(
-                    title = stringResource(Res.string.item_remind_time_before),
-                    currentValue = stringResource(Res.string.remind_time_minutes_format, uiState.remindBeforeMinutes),
-                    onClick = { viewModel.showDialog(NotificationDialogType.EditRemindMinutes) }
-                )
-            }
+    Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)) {
+        com.xingheyuzhuan.shiguangschedule.ui.settings.ReminderSettingsOverview(uiState.reminderEnabled,
+            uiState.schedulePreviewEnabled, uiState.schedulePreviewHour, viewModel::updateReminderEnabled,
+            { viewModel.updateSchedulePreview(it) }, { viewModel.updateSchedulePreview(uiState.schedulePreviewEnabled, it) })
+        com.xingheyuzhuan.shiguangschedule.ui.settings.SettingsSection("提醒方式") {
+            com.xingheyuzhuan.shiguangschedule.ui.settings.SettingsActionRow(stringResource(Res.string.item_remind_time_before),
+                { viewModel.showDialog(NotificationDialogType.EditRemindMinutes) },
+                value = stringResource(Res.string.remind_time_minutes_format, uiState.remindBeforeMinutes))
         }
     }
 }
@@ -116,12 +89,12 @@ actual fun PlatformNotificationDialogDispatcher(
                             val mins = tempInput.toIntOrNull() ?: 15
                             viewModel.updateRemindBeforeMinutes(mins)
                         }
-                    ) {
+                    , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                         Text(stringResource(Res.string.action_confirm))
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { viewModel.dismissDialog() }) {
+                    TextButton(onClick = { viewModel.dismissDialog() }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                         Text(stringResource(Res.string.action_cancel))
                     }
                 }

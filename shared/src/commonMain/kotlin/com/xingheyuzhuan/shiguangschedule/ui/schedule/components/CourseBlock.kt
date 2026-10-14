@@ -32,6 +32,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import com.xingheyuzhuan.shiguangschedule.ui.components.CourseTemporalStatus
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.xingheyuzhuan.shiguangschedule.data.db.main.CourseWithWeeks
@@ -48,7 +51,8 @@ fun CourseBlock(
     timeSlots: List<TimeSlot>,
     modifier: Modifier = Modifier,
     isFloating: Boolean = false, // 标记当前块是否处于长按选中/悬浮状态
-    blockShape: Shape? = null
+    blockShape: Shape? = null,
+    temporalStatus: CourseTemporalStatus? = null
 ) {
     val course = courseWrapper.course
     val isDarkTheme = LocalIsDarkTheme.current
@@ -64,9 +68,20 @@ fun CourseBlock(
 
     val currentAlpha = if (isFloating) 0.95f else style.courseBlockAlpha
     val accent = courseColorAdapted ?: fallbackColorAdapted
-    val blockColor = accent.copy(alpha = currentAlpha)
-    val textColor = style.courseTextColor ?: MaterialTheme.colorScheme.onSurface
-    val captionColor = style.courseTextColor ?: MaterialTheme.colorScheme.onSurfaceVariant
+    val completed = temporalStatus == CourseTemporalStatus.COMPLETED
+    val ongoing = temporalStatus == CourseTemporalStatus.ONGOING && style.highlightOngoing
+    val colors = MaterialTheme.colorScheme
+    val blockColor = when {
+        ongoing -> colors.primary
+        completed && style.dimCompletedBackground -> colors.surfaceContainerHighest
+        else -> accent
+    }.copy(alpha = currentAlpha)
+    val textColor = when {
+        ongoing -> colors.onPrimary
+        completed && style.dimCompletedText -> colors.onSurfaceVariant
+        else -> style.courseTextColor ?: colors.onSurface
+    }
+    val captionColor = if (ongoing) colors.onPrimary.copy(alpha = .82f) else if (completed && style.dimCompletedText) colors.onSurfaceVariant else style.courseTextColor ?: colors.onSurfaceVariant
 
     // 字体大小
     val s13 = (12 * style.fontScale).sp
@@ -136,7 +151,13 @@ fun CourseBlock(
     }
 
     BoxWithConstraints(
-        modifier = modifier
+        modifier = modifier.semantics {
+            when (temporalStatus) {
+                CourseTemporalStatus.ONGOING -> stateDescription = "正在上课"
+                CourseTemporalStatus.COMPLETED -> stateDescription = "已结束"
+                else -> Unit
+            }
+        }
             .then(floatingShadowModifier)
             .fillMaxSize()
             .then(borderModifier)

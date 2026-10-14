@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.update
 
 import androidx.compose.animation.AnimatedVisibility
@@ -11,7 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,7 +20,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -28,7 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -235,7 +236,7 @@ fun RepoSelectionCard(
                 onClick = onUpdateClicked,
                 enabled = !isUpdating,
                 modifier = Modifier.fillMaxWidth()
-            ) {
+            , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(
                     text = if (isUpdating) {
                         stringResource(Res.string.action_updating)

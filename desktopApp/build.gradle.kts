@@ -14,7 +14,7 @@ kotlin {
     jvmToolchain(21)
 }
 
-val appVersion = "2.1.0"
+val appVersion = "2.4.0"
 val appBaseName = "shiguangschedule"
 
 dependencies {
@@ -27,6 +27,7 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.material3)
     implementation(libs.kotlinx.coroutines.swing)
+    implementation(libs.kotlinx.datetime)
     implementation(libs.compose.ui.tooling.preview)
 }
 

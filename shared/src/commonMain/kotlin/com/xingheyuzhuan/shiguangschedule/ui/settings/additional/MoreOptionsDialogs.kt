@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.additional
 
 import androidx.compose.foundation.clickable
@@ -13,7 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ListItem
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsListItem as ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -81,7 +82,7 @@ fun StartScreenSelectionDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_cancel))
             }
         }
@@ -125,12 +126,12 @@ fun ChannelSelectionDialog(
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(selectedPlatform) }) {
+            Button(onClick = { onConfirm(selectedPlatform) }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_confirm))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_cancel))
             }
         }
@@ -170,7 +171,7 @@ fun UpdateResultDialog(
             stringResource(Res.string.dialog_new_version_found, updateStatus.versionName),
             updateStatus.changelog,
             @Composable {
-                Button(onClick = { onDownloadClick(updateStatus.targetUrl) }) {
+                Button(onClick = { onDownloadClick(updateStatus.targetUrl) }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.btn_download_update))
                 }
             }
@@ -205,7 +206,7 @@ fun UpdateResultDialog(
         },
         confirmButton = { confirmBtn?.invoke() },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(if (updateStatus is UpdateStatus.Found) Res.string.action_cancel else Res.string.action_confirm))
             }
         }

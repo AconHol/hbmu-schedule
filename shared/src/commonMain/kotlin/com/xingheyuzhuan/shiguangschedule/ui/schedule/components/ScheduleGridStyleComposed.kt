@@ -50,6 +50,11 @@ data class ScheduleGridStyleComposed(
     val pageTextColor: Color?, // 页面字符颜色
     val courseTextColor: Color?, // 课程块文字颜色
     val hideEmptyDays: Boolean = true,
+    val dimCompletedText: Boolean = true,
+    val dimCompletedBackground: Boolean = true,
+    val highlightOngoing: Boolean = true,
+    val strikeCompletedToday: Boolean = true,
+    val hideReminderTip: Boolean = false,
 ) {
     companion object {
         /**
@@ -73,6 +78,11 @@ data class ScheduleGridStyleComposed(
                 },
                 hideGridLines = this.hideGridLines,
                 hideEmptyDays = this.hideEmptyDays,
+                dimCompletedText = this.dimCompletedText,
+                dimCompletedBackground = this.dimCompletedBackground,
+                highlightOngoing = this.highlightOngoing,
+                strikeCompletedToday = this.strikeCompletedToday,
+                hideReminderTip = this.hideReminderTip,
                 hideSectionTime = this.hideSectionTime,
                 hideDateUnderDay = this.hideDateUnderDay,
                 showStartTime = this.showStartTime,

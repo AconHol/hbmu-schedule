@@ -101,9 +101,7 @@ fun WeeklyScheduleScreen(
         viewModel.updateDarkTheme(isDark)
     }
 
-    val today = remember {
-        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-    }
+    val today = com.xingheyuzhuan.shiguangschedule.ui.components.rememberCourseNow().date
 
     val coroutineScope = rememberCoroutineScope()
     val snackbarMsg = stringResource(Res.string.snackbar_add_course_within_semester)
@@ -260,7 +258,7 @@ fun WeeklyScheduleScreen(
                     }
                 }
 
-                val pageTodayIndex = remember(pageMondayDate) {
+                val pageTodayIndex = remember(pageMondayDate, today) {
                     val weekDates = (0..6).map { pageMondayDate.plus(it.toLong(), DateTimeUnit.DAY) }
                     weekDates.indexOf(today)
                 }
@@ -287,7 +285,8 @@ fun WeeklyScheduleScreen(
                         todayIndex = pageTodayIndex,
                         firstDayOfWeek = uiState.firstDayOfWeek,
                         currentSectionIndex = if (pageTodayIndex >= 0) uiState.currentSectionIndex else -1,
-                        revealEmptyDays = floatingCourse != null
+                        revealEmptyDays = floatingCourse != null,
+                        weekStartDate = pageMondayDate
                     )
                 }
 

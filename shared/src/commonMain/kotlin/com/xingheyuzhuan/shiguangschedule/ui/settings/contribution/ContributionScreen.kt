@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 // Modified by AconHol (2026): offline contributor data, attribution and grouped lists.
 package com.xingheyuzhuan.shiguangschedule.ui.settings.contribution
 
@@ -18,11 +19,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
@@ -31,7 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
 import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.material3.TopAppBar
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -285,7 +286,7 @@ fun ErrorMessage(
             color = MaterialTheme.colorScheme.error,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        Button(onClick = onRetry) {
+        Button(onClick = onRetry, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
             Text(actionRetry)
         }
     }

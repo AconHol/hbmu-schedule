@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.course
 
 import androidx.compose.foundation.layout.Arrangement
@@ -15,15 +16,15 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsDivider as HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -356,12 +357,12 @@ fun AddEditCourseScreen(
                         showExitConfirmDialog = false
                         onBack()
                     }
-                ) {
+                , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(text = stringResource(Res.string.common_action_exit_without_save))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showExitConfirmDialog = false }) {
+                TextButton(onClick = { showExitConfirmDialog = false }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(text = stringResource(Res.string.common_action_continue_editing))
                 }
             }

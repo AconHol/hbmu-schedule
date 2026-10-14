@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.style
 
 import androidx.compose.foundation.BorderStroke
@@ -33,7 +34,7 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsDivider as HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -160,12 +161,12 @@ fun SettingsListContent(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     )
-                ) {
+                , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_confirm))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showResetDialog = false }) {
+                TextButton(onClick = { showResetDialog = false }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_cancel))
                 }
             }
@@ -181,7 +182,7 @@ fun SettingsListContent(
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
-        ) {
+        , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
             Text(stringResource(Res.string.action_reset_style))
         }
 
@@ -233,6 +234,15 @@ fun SettingsListContent(
         StyleSwitchItem(stringResource(Res.string.label_hide_date_under_day), currentStyle.hideDateUnderDay) { viewModel.updateHideDateUnderDay(it) }
         StyleSwitchItem(label = stringResource(Res.string.label_hide_grid_lines), checked = currentStyle.hideGridLines) { viewModel.updateHideGridLines(it) }
         StyleSwitchItem(label = "自动隐藏无课日期", checked = currentStyle.hideEmptyDays) { viewModel.updateHideEmptyDays(it) }
+        Text("课表页 · 课程状态", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+        StyleSwitchItem("已结束课程的文字变灰", currentStyle.dimCompletedText) { viewModel.updateDimCompletedText(it) }
+        StyleSwitchItem("已结束课程的背景变灰", currentStyle.dimCompletedBackground) { viewModel.updateDimCompletedBackground(it) }
+        StyleSwitchItem("突出正在上课的课程", currentStyle.highlightOngoing) { viewModel.updateHighlightOngoing(it) }
+        Text("这些配色仅用于周课表，按课程日期和实际起止时间更新。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("主页 · 当天课程", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+        StyleSwitchItem("划掉已结束课程的名称", currentStyle.strikeCompletedToday) { viewModel.updateStrikeCompletedToday(it) }
+        StyleSwitchItem("显示提醒设置提示", !currentStyle.hideReminderTip) { viewModel.updateHideReminderTip(!it) }
+
         ColorPickerItem(
             label = stringResource(Res.string.label_page_text_color),
             currentColor = currentStyle.pageTextColor,
@@ -469,24 +479,7 @@ fun StyleSwitchItem(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable { onCheckedChange(!checked) }
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyMedium)
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            thumbContent = if (checked) {
-                { Icon(modifier = Modifier.size(SwitchDefaults.IconSize), imageVector = vectorResource(Res.drawable.check_24px), contentDescription = null) }
-            } else null
-        )
-    }
+    com.xingheyuzhuan.shiguangschedule.ui.settings.SettingsToggleRow(label, checked, onCheckedChange)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -583,7 +576,7 @@ fun ColorPickerItem(
                     TextButton(onClick = {
                         onReset()
                         showSheet = false
-                    }) {
+                    }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                         Icon(vectorResource(Res.drawable.refresh_24px), contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(4.dp))
                         Text(stringResource(Res.string.action_reset))

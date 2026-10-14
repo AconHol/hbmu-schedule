@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.time
 
 import androidx.compose.animation.AnimatedVisibility
@@ -20,21 +21,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -275,7 +276,7 @@ fun TimeScheduleManagementScreen(
                             viewModel.deleteSchedules(selectedKeys.toSet())
                             exitSelectionMode()
                         }
-                    ) {
+                    , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                         Text(
                             stringResource(Res.string.a11y_delete),
                             color = MaterialTheme.colorScheme.error
@@ -283,7 +284,7 @@ fun TimeScheduleManagementScreen(
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    TextButton(onClick = { showDeleteConfirmDialog = false }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                         Text(stringResource(Res.string.action_cancel))
                     }
                 }

@@ -1,6 +1,8 @@
 // Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.settings.notification
 
+import com.xingheyuzhuan.shiguangschedule.ui.settings.*
+
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,9 +11,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsDivider as HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -65,185 +67,29 @@ fun GeneralSettingsCard(
     onBatteryOptimizationClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
     val context = LocalContext.current
-
-    // 仅在开启提醒开关但无权限时弹窗引导
-    var showExactAlarmDialog by remember { mutableStateOf(false) }
-
-    Column(modifier = modifier) {
-        Text(
-            text = stringResource(Res.string.section_title_general),
-            style = MaterialTheme.typography.titleLarge
-        )
-        Spacer(Modifier.height(8.dp))
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                // 权限说明头部
-                Text(
-                    text = "上课提醒与每日预告",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "提醒会附带时间、教室与老师。点击通知即可回到课表。",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
-                if (!uiState.notificationAllowed) {
-                    Text("允许通知后，上课提醒和明日预告才能送达。", style = MaterialTheme.typography.bodyMedium)
-                    TextButton(onNotificationPermissionClick) { Text("允许发送通知") }
-                }
-
-                // 1. 上课提醒主开关
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = stringResource(Res.string.item_course_reminder),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Switch(
-                        checked = uiState.reminderEnabled,
-                        onCheckedChange = { targetState ->
-                            if (targetState) {
-                                onReminderToggle(true)
-                            } else {
-                                onReminderToggle(false)
-                            }
-                        }
-                    )
-                }
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text("明日课表预告", style = MaterialTheme.typography.titleMedium)
-                        Text("前一晚通知明天的课程，空课表不打扰", style = MaterialTheme.typography.bodySmall)
-                    }
-                    Switch(uiState.schedulePreviewEnabled, onPreviewToggle)
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(18, 20, 21).forEach { hour ->
-                        FilterChip(selected = uiState.schedulePreviewHour == hour, onClick = { onPreviewHourChange(hour) }, label = { Text("$hour:00") })
-                    }
-                }
-                Text("上课提醒使用课表中的作息时间，请在作息管理中校准学校的节次时间。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (!uiState.exactAlarmStatus) Text("开启准时提醒可减少系统延后通知。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-
-                // 2. 兼容穿戴设备同步通知开关
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.item_compat_wearable_sync),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Switch(
-                            checked = uiState.compatWearableSync,
-                            onCheckedChange = onCompatWearableToggle
-                        )
-                    }
-                    Text(
-                        text = stringResource(Res.string.desc_compat_wearable_sync),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
-                    )
-                }
-
-                HorizontalDivider()
-
-                // 3. 上课自动模式
-                SettingItemRow(
-                    title = stringResource(Res.string.item_auto_mode),
-                    currentValue = currentModeText,
-                    onClick = onAutoModeClick
-                )
-                if (!uiState.reminderEnabled) {
-                    Text(
-                        text = stringResource(Res.string.text_auto_mode_dependency),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                        modifier = Modifier.padding(start = 16.dp, top = 4.dp, bottom = 8.dp)
-                    )
-                }
-
-                HorizontalDivider()
-
-                // 4. 提前提醒时间
-                SettingItemRow(
-                    title = stringResource(Res.string.item_remind_time_before),
-                    currentValue = stringResource(Res.string.remind_time_minutes_format, uiState.remindBeforeMinutes),
-                    onClick = onRemindTimeClick
-                )
-
-                // 5. 精确闹钟权限 (Android 12+)：直接跳转页面
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    HorizontalDivider()
-                    val statusText = if (uiState.exactAlarmStatus)
-                        stringResource(Res.string.status_enabled)
-                    else
-                        stringResource(Res.string.status_disabled)
-
-                    SettingItemRow(
-                        title = "准时提醒",
-                        currentValue = statusText,
-                        onClick = { openExactAlarmSettings(context) }
-                    )
-                }
-
-                HorizontalDivider()
-
-                // 6. 勿扰模式权限：直接跳转页面
-                val dndStatusText = if (uiState.dndPermissionStatus)
-                    stringResource(Res.string.status_authorized)
-                else
-                    stringResource(Res.string.status_unauthorized)
-
-                SettingItemRow(
-                    title = stringResource(Res.string.item_dnd_permission),
-                    currentValue = dndStatusText,
-                    onClick = { openDndSettings(context) }
-                )
-
-                HorizontalDivider()
-
-                // 7. 后台与自启动
-                SettingItemRow(
-                    title = stringResource(Res.string.item_background_and_autostart),
-                    onClick = onAppSettingsClick
-                )
-
-                HorizontalDivider()
-
-                // 8. 忽略电池优化
-                SettingItemRow(
-                    title = stringResource(Res.string.item_ignore_battery_optimization),
-                    onClick = onBatteryOptimizationClick
-                )
-            }
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        ReminderSettingsOverview(uiState.reminderEnabled, uiState.schedulePreviewEnabled, uiState.schedulePreviewHour,
+            onReminderToggle, onPreviewToggle, onPreviewHourChange)
+        if (!uiState.notificationAllowed) SettingsActionRow("允许发送通知", onNotificationPermissionClick,
+            "授予通知权限后，上课提醒和明日预告才能送达。")
+        SettingsSection("提醒方式") {
+            SettingsActionRow(stringResource(Res.string.item_auto_mode), onAutoModeClick,
+                if (!uiState.reminderEnabled) stringResource(Res.string.text_auto_mode_dependency) else null,
+                value = currentModeText, position = 0, count = 3)
+            SettingsActionRow(stringResource(Res.string.item_remind_time_before), onRemindTimeClick,
+                value = stringResource(Res.string.remind_time_minutes_format, uiState.remindBeforeMinutes), position = 1, count = 3)
+            SettingsToggleRow(stringResource(Res.string.item_compat_wearable_sync), uiState.compatWearableSync,
+                onCompatWearableToggle, stringResource(Res.string.desc_compat_wearable_sync), 2, 3)
         }
-    }
-
-    // 点击开启上课提醒无权限时显示的弹窗
-    if (showExactAlarmDialog) {
-        ExactAlarmPermissionGuideDialog(
-            onDismiss = { showExactAlarmDialog = false }
-        )
+        SettingsSection("系统权限与后台运行") {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) SettingsActionRow("准时提醒", { openExactAlarmSettings(context) },
+                "开启后可减少系统延后通知。", value = if (uiState.exactAlarmStatus) "已开启" else "未开启", position = 0, count = 4)
+            SettingsActionRow(stringResource(Res.string.item_dnd_permission), { openDndSettings(context) },
+                value = if (uiState.dndPermissionStatus) "已授权" else "未授权", position = 1, count = 4)
+            SettingsActionRow(stringResource(Res.string.item_background_and_autostart), onAppSettingsClick, position = 2, count = 4)
+            SettingsActionRow(stringResource(Res.string.item_ignore_battery_optimization), onBatteryOptimizationClick, position = 3, count = 4)
+        }
     }
 }

@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.style.widget
 
 import androidx.compose.foundation.BorderStroke
@@ -25,16 +26,16 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsDivider as HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -105,12 +106,12 @@ fun WidgetStyleSettingsScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     )
-                ) {
+                , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_confirm))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showResetDialog = false }) {
+                TextButton(onClick = { showResetDialog = false }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_cancel))
                 }
             }
@@ -151,7 +152,7 @@ fun WidgetStyleSettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
-            ) {
+            , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_reset_style))
             }
 
@@ -340,7 +341,7 @@ private fun WidgetSeedColorPickerItem(
                     TextButton(onClick = {
                         onReset()
                         showSheet = false
-                    }) {
+                    }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                         Icon(
                             vectorResource(Res.drawable.refresh_24px),
                             contentDescription = null,

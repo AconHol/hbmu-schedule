@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.themesettings
 
 import androidx.compose.foundation.background
@@ -7,6 +8,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsListItem as ListItem
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -85,7 +90,7 @@ fun ThemeSettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinV
                         }
                     }
                 }
-                TextButton(onClick = { viewModel.onCustomPrimaryChanged() }) { Text("恢复默认配色") }
+                TextButton(onClick = { viewModel.onCustomPrimaryChanged() }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text("恢复默认配色") }
             }
             Text("主色会生成完整的主题色阶，按钮、课表、底栏和弹窗会一起更新。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(12.dp))

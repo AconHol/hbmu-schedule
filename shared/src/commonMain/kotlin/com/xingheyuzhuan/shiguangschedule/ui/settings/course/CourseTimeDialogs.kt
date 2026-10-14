@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.course
 
 import androidx.compose.foundation.layout.Arrangement
@@ -117,7 +118,7 @@ fun CourseTimePickerBottomSheet(
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) {
+            , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_confirm))
             }
         }
@@ -263,7 +264,7 @@ fun CustomTimeRangePickerBottomSheet(
                         scope.launch { sheetState.hide() }.invokeOnCompletion { onDismissRequest() }
                     }
                 }
-            ) {
+            , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(confirmText)
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -296,11 +297,11 @@ fun DayPickerDialog(
                 DayPicker(selectedDay = tempSelectedDay, onDaySelected = { tempSelectedDay = it })
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = onDismissRequest) { Text(stringResource(Res.string.action_cancel)) }
+                    TextButton(onClick = onDismissRequest, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(stringResource(Res.string.action_cancel)) }
                     Button(onClick = {
                         onDaySelected(tempSelectedDay)
                         onDismissRequest()
-                    }) { Text(stringResource(Res.string.action_confirm)) }
+                    }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(stringResource(Res.string.action_confirm)) }
                 }
             }
         }

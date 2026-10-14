@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.coursetables
 
 import androidx.compose.foundation.BorderStroke
@@ -13,18 +14,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -197,13 +198,13 @@ fun ManageCourseTablesScreen(
                         } else {
                             ToastManager.show(toastNameEmpty)
                         }
-                    }) { Text(actionAdd) }
+                    }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(actionAdd) }
                 },
                 dismissButton = {
                     TextButton(onClick = {
                         showAddTableDialog = false
                         newTableName = ""
-                    }) { Text(actionCancel) }
+                    }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(actionCancel) }
                 }
             )
         }
@@ -239,14 +240,14 @@ fun ManageCourseTablesScreen(
                         } else {
                             ToastManager.show(toastNameEmpty)
                         }
-                    }) { Text(a11ySave) }
+                    }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(a11ySave) }
                 },
                 dismissButton = {
                     TextButton(onClick = {
                         showEditTableDialog = false
                         editingTableInfo = null
                         editedTableName = ""
-                    }) { Text(actionCancel) }
+                    }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(actionCancel) }
                 }
             )
         }
@@ -277,7 +278,7 @@ fun ManageCourseTablesScreen(
                             showDeleteConfirmDialog = false
                             tableToDelete = null
                         }
-                    }) {
+                    }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                         Text(actionDelete, color = MaterialTheme.colorScheme.error)
                     }
                 },
@@ -285,7 +286,7 @@ fun ManageCourseTablesScreen(
                     TextButton(onClick = {
                         showDeleteConfirmDialog = false
                         tableToDelete = null
-                    }) { Text(actionCancel) }
+                    }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(actionCancel) }
                 }
             )
         }

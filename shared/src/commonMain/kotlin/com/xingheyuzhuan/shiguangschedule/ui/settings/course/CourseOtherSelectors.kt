@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.course
 
 import androidx.compose.foundation.background
@@ -250,7 +251,7 @@ fun WeekSelectorBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedButton(onClick = onDismissRequest, modifier = Modifier.weight(1f)) {
+                OutlinedButton(onClick = onDismissRequest, modifier = Modifier.weight(1f), shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(actionCancel)
                 }
                 Button(
@@ -261,7 +262,7 @@ fun WeekSelectorBottomSheet(
                         }
                     },
                     modifier = Modifier.weight(1f)
-                ) {
+                , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(actionConfirm)
                 }
             }
@@ -364,7 +365,7 @@ fun ColorPickerBottomSheet(
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = onDismissRequest, modifier = Modifier.weight(1f)) {
+                OutlinedButton(onClick = onDismissRequest, modifier = Modifier.weight(1f), shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(actionCancel)
                 }
                 Button(
@@ -375,7 +376,7 @@ fun ColorPickerBottomSheet(
                         }
                     },
                     modifier = Modifier.weight(1f)
-                ) {
+                , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(actionConfirm)
                 }
             }

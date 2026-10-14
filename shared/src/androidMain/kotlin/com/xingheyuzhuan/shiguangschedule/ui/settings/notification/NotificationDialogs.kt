@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.notification
 
 import androidx.compose.foundation.clickable
@@ -181,12 +182,12 @@ fun AutoModeSelectionDialog(
                 } else {
                     onModeSelected(selectedKey)
                 }
-            }) {
+            }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_confirm))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_cancel))
             }
         }
@@ -214,10 +215,10 @@ fun EditRemindMinutesDialog(
             )
         },
         confirmButton = {
-            Button(onClick = onConfirm) { Text(stringResource(Res.string.action_confirm)) }
+            Button(onClick = onConfirm, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(stringResource(Res.string.action_confirm)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) }
+            TextButton(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(stringResource(Res.string.action_cancel)) }
         }
     )
 }
@@ -240,10 +241,10 @@ fun PermissionGuideDialog(
             Button(onClick = {
                 onConfirm()
                 onDismiss()
-            }) { Text(stringResource(Res.string.action_go_to_settings)) }
+            }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(stringResource(Res.string.action_go_to_settings)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) }
+            TextButton(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(stringResource(Res.string.action_cancel)) }
         }
     )
 }

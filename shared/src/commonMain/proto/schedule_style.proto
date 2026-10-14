@@ -102,4 +102,9 @@ message ScheduleGridStyleProto {
 
   optional WidgetStyleProto widget_style = 28;   // 小组件样式配置
   optional bool hide_empty_days = 29; // 自动隐藏当前页面没有课程的日期列
+  optional bool dim_completed_text = 30;
+  optional bool dim_completed_background = 31;
+  optional bool highlight_ongoing = 32;
+  optional bool strike_completed_today = 33;
+  optional bool hide_reminder_tip = 34;
 }

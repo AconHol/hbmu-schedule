@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.backup
 
 import androidx.compose.foundation.clickable
@@ -16,14 +17,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsDivider as HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ListItem
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsListItem as ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -34,7 +35,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -401,14 +402,14 @@ fun TargetSelectionDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_cancel))
             }
         },
         confirmButton = {
             Button(
                 onClick = { onTargetSelected(selectedTarget) }
-            ) {
+            , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_confirm))
             }
         }
@@ -473,7 +474,7 @@ fun WebDavConfigDialog(
             TextButton(
                 onClick = { onSave(inputUrl, inputUsername, inputPassword, inputRootPath) },
                 enabled = !state.isTesting
-            ) {
+            , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(
                     if (state.isTesting) stringResource(Res.string.title_loading)
                     else stringResource(Res.string.action_confirm)
@@ -484,7 +485,7 @@ fun WebDavConfigDialog(
             TextButton(onClick = {
                 onDisconnect()
                 onDismiss()
-            }) {
+            }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(
                     text = stringResource(Res.string.action_reset),
                     color = MaterialTheme.colorScheme.error

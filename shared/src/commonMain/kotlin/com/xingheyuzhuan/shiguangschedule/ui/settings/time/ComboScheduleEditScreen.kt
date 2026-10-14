@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.time
 
 import androidx.compose.foundation.clickable
@@ -13,7 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePickerDialog
@@ -24,7 +25,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -32,7 +33,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -259,7 +260,7 @@ fun ComboScheduleEditScreen(
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) {
+                , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Icon(
                         imageVector = vectorResource(Res.drawable.add_24px),
                         contentDescription = null
@@ -473,12 +474,12 @@ private fun RuleEditCard(
                     },
                     enabled = dateRangePickerState.selectedStartDateMillis != null &&
                             dateRangePickerState.selectedEndDateMillis != null
-                ) {
+                , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_confirm))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                TextButton(onClick = { showDatePicker = false }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_cancel))
                 }
             }

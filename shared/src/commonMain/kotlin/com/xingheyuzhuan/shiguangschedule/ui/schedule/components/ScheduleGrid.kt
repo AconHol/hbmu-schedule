@@ -50,6 +50,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.xingheyuzhuan.shiguangschedule.data.model.schedule_style.ScheduleModeProto
 import kotlinx.coroutines.delay
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.plus
+import com.xingheyuzhuan.shiguangschedule.ui.components.courseTemporalStatus
+import com.xingheyuzhuan.shiguangschedule.ui.components.rememberCourseNow
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.vectorResource
 import shiguangschedule.shared.generated.resources.Res
@@ -70,6 +74,7 @@ fun ScheduleGrid(
 ) {
     BoxWithConstraints(modifier.fillMaxSize().padding(horizontal = ConnectedScheduleLayout.PageMargin)) {
         val density = LocalDensity.current
+        val courseNow = rememberCourseNow()
         val horizontalScroll = rememberScrollState()
         var showFullWeek by remember(viewState.dates, style.hideEmptyDays) { mutableStateOf(false) }
         val navigationBottom = com.xingheyuzhuan.shiguangschedule.ui.components.LocalNavigationContentBottom.current
@@ -235,7 +240,10 @@ fun ScheduleGrid(
                     style = style, timeSlots = viewState.timeSlots, maxGridSections = maxGridSections,
                     is24HourMode = is24HourMode, onTimeSlotClicked = { actions.onTimeSlotClicked() },
                     modifier = Modifier.height(totalGridHeight),
-                    currentSectionIndex = if (viewState.mergedCourses.any { block -> block.courses.any { !it.course.isCustomTime && it.course.customStartTime != null } }) -1 else viewState.currentSectionIndex, textColor = pageTextColor,
+                    currentSectionIndex = if (viewState.todayIndex < 0 || viewState.mergedCourses.any { block -> block.courses.any { !it.course.isCustomTime && it.course.customStartTime != null } }) -1
+                        else if (is24HourMode) courseNow.hour else viewState.timeSlots.firstOrNull {
+                            it.startTime <= courseNow.time.toString().take(5) && courseNow.time.toString().take(5) < it.endTime
+                        }?.number ?: -1, textColor = pageTextColor,
                     subTextColor = pageSubTextColor,
                     activeDragHour = activeDragHour,
                     activeDragMinuteStr = activeDragMinuteStr,
@@ -273,6 +281,12 @@ fun ScheduleGrid(
                             ) {
                                 CourseBlock(
                                     courseWrapper = item.courseWrapper,
+                                    temporalStatus = if (item.parentBlock.isVisualDemoted) null else viewState.weekStartDate?.let { startDate ->
+                                        val course = item.courseWrapper.course
+                                        val date = startDate.plus(((course.day - viewState.firstDayOfWeek + 7) % 7).toLong(), DateTimeUnit.DAY)
+                                        courseTemporalStatus(date, course.customStartTime ?: viewState.timeSlots.find { it.number == course.startSection }?.startTime,
+                                            course.customEndTime ?: viewState.timeSlots.find { it.number == course.endSection }?.endTime, courseNow)
+                                    },
                                     isVisualDemoted = item.parentBlock.isVisualDemoted,
                                     style = style,
                                     timeSlots = viewState.timeSlots,

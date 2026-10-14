@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.conversion
 
 import androidx.compose.foundation.layout.*
@@ -98,12 +99,12 @@ fun IcsExportDialog(
                 }
             },
             confirmButton = {
-                Button(onClick = { showTablePicker = true }) {
+                Button(onClick = { showTablePicker = true }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_next_step))
                 }
             },
             dismissButton = {
-                TextButton(onClick = onDismissRequest) {
+                TextButton(onClick = onDismissRequest, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_cancel))
                 }
             }

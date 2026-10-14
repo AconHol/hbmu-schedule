@@ -57,7 +57,7 @@ class TodayScheduleViewModel(
     private val dates = flow {
         while (true) {
             emit(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date)
-            delay(30000)
+            delay(1000)
         }
     }.distinctUntilChanged()
 

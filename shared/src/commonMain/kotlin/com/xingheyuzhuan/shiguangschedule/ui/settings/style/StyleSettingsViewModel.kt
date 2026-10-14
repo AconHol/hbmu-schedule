@@ -250,6 +250,16 @@ class StyleSettingsViewModel(
     // --- UI 渲染开关 API ---
 
     /** 更新是否自动隐藏无课日期 */
+    fun updateDimCompletedText(value: Boolean) { viewModelScope.launch { styleRepository.setDimCompletedText(value) } }
+
+    fun updateDimCompletedBackground(value: Boolean) { viewModelScope.launch { styleRepository.setDimCompletedBackground(value) } }
+
+    fun updateHighlightOngoing(value: Boolean) { viewModelScope.launch { styleRepository.setHighlightOngoing(value) } }
+
+    fun updateStrikeCompletedToday(value: Boolean) { viewModelScope.launch { styleRepository.setStrikeCompletedToday(value) } }
+
+    fun updateHideReminderTip(value: Boolean) { viewModelScope.launch { styleRepository.setHideReminderTip(value) } }
+
     fun updateHideEmptyDays(hide: Boolean) = viewModelScope.launch {
         styleRepository.setHideEmptyDays(hide)
     }

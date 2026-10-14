@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.time.components
 
 import androidx.compose.foundation.layout.Arrangement
@@ -257,7 +258,7 @@ fun TimeSlotEditContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(onClick = onDismiss) { Text(actionCancel) }
+                    TextButton(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(actionCancel) }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(onClick = {
                         val startTimeObj = LocalTime(startHourState, startMinuteState)
@@ -286,7 +287,7 @@ fun TimeSlotEditContent(
                             formatTime(endTimeObj),
                             aliasState.ifBlank { null }
                         )
-                    }) {
+                    }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                         Text(if (isEditing) actionSaveChanges else actionAdd)
                     }
                 }

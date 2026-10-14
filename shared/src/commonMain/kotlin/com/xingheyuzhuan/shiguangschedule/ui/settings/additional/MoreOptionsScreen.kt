@@ -1,23 +1,27 @@
 // Modified by AconHol (2026): independent learning release and privacy notices.
 package com.xingheyuzhuan.shiguangschedule.ui.settings.additional
 
+import com.xingheyuzhuan.shiguangschedule.ui.settings.SettingsSection
+import com.xingheyuzhuan.shiguangschedule.ui.settings.SettingsActionRow
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -127,118 +131,32 @@ fun MoreOptionsScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 应用信息头部
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                DynamicAppIconHeader(
-                    isDeveloperModeEnabled = isDeveloperModeEnabled,
-                    onTriggerDeveloperMode = { viewModel.onDeveloperModeChanged(true) }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(Res.string.app_name),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
-                )
-                Text(
-                    text = stringResource(Res.string.label_version_prefix, appVersionName),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
 
-            // 设置列表卡片
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-
-                    // 开发者模式设置项
-                    DeveloperModeSettingItem(
-                        isDeveloperModeEnabled = isDeveloperModeEnabled,
-                        onDeveloperModeChanged = { viewModel.onDeveloperModeChanged(it) }
-                    )
-
-                    // 检查更新
-                    SettingListItem(
-                        icon = vectorResource(Res.drawable.update_24px),
-                        title = stringResource(Res.string.item_check_software_update),
-                        onClick = { showChannelDialog = true }
-                    )
-
-                    // 语言切换 (导航至独立页面)
-                    SettingListItem(
-                        icon = vectorResource(Res.drawable.language_24px),
-                        title = stringResource(Res.string.item_language_settings),
-                        onClick = { onNavigate(Destination.LanguageSettings) }
-                    )
-
-                    // 主题设置
-                    SettingListItem(
-                        icon = vectorResource(Res.drawable.palette_24px),
-                        title = stringResource(Res.string.theme_settings_title),
-                        onClick = { onNavigate(Destination.ThemeSettings) }
-                    )
-
-                    // 启动页面设置
-                    SettingListItem(
-                        icon = vectorResource(Res.drawable.home_24px),
-                        title = stringResource(Res.string.item_start_screen_settings),
-                        onClick = { showStartScreenDialog = true },
-                        trailingContent = {
-                            Text(
-                                text = stringResource(uiState.appSettings.startScreen.labelRes),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    )
-
-                    // GitHub 仓库
-                    SettingListItem(
-                        icon = vectorResource(Res.drawable.code_24px),
-                        title = stringResource(Res.string.item_github_repo),
-                        onClick = { uriHandler.openUri(GITHUB_REPO_URL) }
-                    )
-
-                    // 开源许可证
-                    SettingListItem(
-                        icon = vectorResource(Res.drawable.list_alt_24px),
-                        title = stringResource(Res.string.item_open_source_licenses),
-                        onClick = { onNavigate(Destination.OpenSourceLicenses) }
-                    )
-
-                    // 更新适配仓库
-                    SettingListItem(
-                        icon = vectorResource(Res.drawable.update_24px),
-                        title = stringResource(Res.string.item_update_repo),
-                        onClick = { onNavigate(Destination.UpdateRepo) }
-                    )
-
-                    // 贡献者
-                    SettingListItem(
-                        icon = vectorResource(Res.drawable.people_alt_24px),
-                        title = stringResource(Res.string.item_contributors),
-                        onClick = { onNavigate(Destination.ContributionList) },
-                        showDivider = false
-                    )
-
-                    // 鸣谢内容
-                    AcknowledgmentContent()
+            androidx.compose.foundation.layout.Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(20.dp)) {
+                DynamicAppIconHeader(isDeveloperModeEnabled, { viewModel.onDeveloperModeChanged(true) }, Modifier.size(80.dp))
+                Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(Res.string.app_name), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                    androidx.compose.material3.Surface(shape = MaterialTheme.shapes.extraLarge, color = MaterialTheme.colorScheme.secondaryContainer) {
+                        Text(stringResource(Res.string.label_version_prefix, appVersionName), Modifier.padding(horizontal = 12.dp, vertical = 6.dp), style = MaterialTheme.typography.labelLarge)
+                    }
                 }
+            }
+            Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)) {
+                if (isDeveloperModeEnabled) DeveloperModeSettingItem(isDeveloperModeEnabled = isDeveloperModeEnabled, onDeveloperModeChanged = { viewModel.onDeveloperModeChanged(it) })
+                SettingsSection("应用偏好") {
+                    SettingsActionRow(stringResource(Res.string.item_check_software_update), { showChannelDialog = true }, icon = vectorResource(Res.drawable.update_24px), position = 0, count = 4)
+                    SettingsActionRow(stringResource(Res.string.item_language_settings), { onNavigate(Destination.LanguageSettings) }, icon = vectorResource(Res.drawable.language_24px), position = 1, count = 4)
+                    SettingsActionRow(stringResource(Res.string.theme_settings_title), { onNavigate(Destination.ThemeSettings) }, icon = vectorResource(Res.drawable.palette_24px), position = 2, count = 4)
+                    SettingsActionRow(stringResource(Res.string.item_start_screen_settings), { showStartScreenDialog = true }, icon = vectorResource(Res.drawable.home_24px), value = stringResource(uiState.appSettings.startScreen.labelRes), position = 3, count = 4)
+                }
+                SettingsSection("项目与支持") {
+                    SettingsActionRow(stringResource(Res.string.item_github_repo), { uriHandler.openUri(GITHUB_REPO_URL) }, icon = vectorResource(Res.drawable.code_24px), position = 0, count = 4)
+                    SettingsActionRow(stringResource(Res.string.item_open_source_licenses), { onNavigate(Destination.OpenSourceLicenses) }, icon = vectorResource(Res.drawable.list_alt_24px), position = 1, count = 4)
+                    SettingsActionRow(stringResource(Res.string.item_update_repo), { onNavigate(Destination.UpdateRepo) }, icon = vectorResource(Res.drawable.update_24px), position = 2, count = 4)
+                    SettingsActionRow(stringResource(Res.string.item_contributors), { onNavigate(Destination.ContributionList) }, icon = vectorResource(Res.drawable.people_alt_24px), position = 3, count = 4)
+                }
+                AcknowledgmentContent()
             }
             Spacer(modifier = Modifier.height(32.dp))
         }

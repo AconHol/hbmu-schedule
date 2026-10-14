@@ -92,7 +92,8 @@ data class ScheduleGridViewState(
     val todayIndex: Int,
     val firstDayOfWeek: Int,
     val currentSectionIndex: Int = -1,
-    val revealEmptyDays: Boolean = false
+    val revealEmptyDays: Boolean = false,
+    val weekStartDate: kotlinx.datetime.LocalDate? = null
 )
 
 /**

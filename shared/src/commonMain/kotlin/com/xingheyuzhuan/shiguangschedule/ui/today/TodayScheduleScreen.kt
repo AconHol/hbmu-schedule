@@ -10,6 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.platform.testTag
+import com.xingheyuzhuan.shiguangschedule.ui.components.CourseTemporalStatus
+import com.xingheyuzhuan.shiguangschedule.ui.components.courseTemporalStatus
+import com.xingheyuzhuan.shiguangschedule.ui.components.rememberCourseNow
+import com.xingheyuzhuan.shiguangschedule.data.repository.StyleSettingsRepository
 import androidx.compose.ui.unit.dp
 import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.ui.components.LocalNavigationContentBottom
@@ -34,13 +40,15 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
     val uiState by viewModel.uiState.collectAsState()
     val connection by hbmu.uiState.collectAsState()
     val tomorrow by viewModel.tomorrowCourses.collectAsState()
-    var time by remember { mutableStateOf(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time) }
+    val now = rememberCourseNow()
+    val time = now.time
+    val gridStyle by viewModel.gridStyle.collectAsState()
+    val styles: StyleSettingsRepository = koinInject()
     var detail by remember { mutableStateOf<CourseDisplayModel?>(null) }
     val scope = rememberCoroutineScope()
-    LaunchedEffect(Unit) { while (true) { time = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time; delay(30000) } }
-    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val today = now.date
     val state = uiState as? TodayUiState.Success
-    val next = state?.courses?.firstOrNull { it.endTime == null || it.endTime!! >= time.toString().take(5) }
+    val next = state?.courses?.firstOrNull { it.endTime == null || it.endTime!! > time.toString().take(5) }
     Scaffold(contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding), verticalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(bottom = LocalNavigationContentBottom.current + 20.dp)) {
             item { HbmuBrandHeader("今日课表", "${today.month.ordinal + 1}月${today.day}日 · 星期${"一二三四五六日"[today.dayOfWeek.isoDayNumber - 1]}", { onNavigate(Destination.Settings) }) }
@@ -48,7 +56,7 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
                 Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), shape = MaterialTheme.shapes.extraLarge, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
                     Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(if (next != null && next.startTime != null && next.startTime!! <= time.toString().take(5)) "正在上课" else if (next != null) "下一节课" else "今日安排", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+                            Text(if (next != null && courseTemporalStatus(today, next.startTime, next.endTime, now) == CourseTemporalStatus.ONGOING) "正在上课" else if (next != null) "下一节课" else "今日安排", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
                             Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = .14f), contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
                                 Text(if (state != null && state.weekIndex > 0) "第 ${state.weekIndex} 周" else "HBMU", Modifier.padding(horizontal = 14.dp, vertical = 6.dp), style = MaterialTheme.typography.labelMedium)
                             }
@@ -92,18 +100,20 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
                 val courses = state?.courses.orEmpty()
                 Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 courses.forEachIndexed { index, model ->
-                val finished = model.endTime?.let { it < time.toString().take(5) } ?: false
-                Surface(onClick = { detail = model }, modifier = Modifier.fillMaxWidth(), shape = connectedCourseShape(index, courses.size), color = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
+                val courseState = courseTemporalStatus(today, model.startTime, model.endTime, now)
+                val finished = courseState == CourseTemporalStatus.COMPLETED
+                val ongoing = courseState == CourseTemporalStatus.ONGOING
+                Surface(onClick = { detail = model }, modifier = Modifier.fillMaxWidth(), shape = connectedCourseShape(index, courses.size), color = if (ongoing) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer, contentColor = if (ongoing) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer) {
                     Row(Modifier.heightIn(min = 92.dp).padding(horizontal = 18.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Column(Modifier.width(60.dp)) {
                             Text(model.startTime ?: "待设置", style = MaterialTheme.typography.titleMedium)
                             Text(model.endTime ?: "", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(Modifier.height(8.dp))
-                            Text(if (finished) "已结束" else "第${model.course.startSection ?: ""}—${model.course.endSection ?: ""}节", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .72f))
+                            Text(if (ongoing) "正在上课" else if (finished) "已结束" else "第${model.course.startSection ?: ""}—${model.course.endSection ?: ""}节", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .72f))
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(model.course.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text(listOf(model.course.position.ifBlank { "教室待公布" }, model.course.teacher).filter { it.isNotBlank() }.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .78f))
+                            Text(model.course.name, modifier = Modifier.testTag("today-course-title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, textDecoration = if (finished && gridStyle.strikeCompletedToday) TextDecoration.LineThrough else TextDecoration.None)
+                            Text(listOf(model.course.position.ifBlank { "教室待公布" }, model.course.teacher).filter { it.isNotBlank() }.joinToString(" · "), modifier = Modifier.testTag("today-course-details"), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .78f))
                         }
                         Icon(vectorResource(Res.drawable.chevron_right_24px), null, tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .70f))
                     }
@@ -128,7 +138,22 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
                                 }
                             }
                         }
-                        TextButton({ onNavigate(Destination.NotificationSettings) }) { Text("设置上课提醒与每日预告") }
+
+                    }
+                }
+            }
+            if (!gridStyle.hideReminderTip) item {
+                Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), shape = MaterialTheme.shapes.extraLarge,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
+                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("让课表及时提醒你", style = MaterialTheme.typography.titleSmall)
+                            Text("开启上课提醒与每日预告，提前安排下一堂课。", style = MaterialTheme.typography.bodySmall)
+                            TextButton(onClick = { onNavigate(Destination.NotificationSettings) }, shapes = ButtonDefaults.shapes()) { Text("设置上课提醒与每日预告") }
+                        }
+                        IconButton(onClick = { scope.launch { styles.setHideReminderTip(true) } }, shapes = IconButtonDefaults.shapes()) {
+                            Icon(vectorResource(Res.drawable.close_24px), "关闭提醒设置提示")
+                        }
                     }
                 }
             }

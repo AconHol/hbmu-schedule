@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.quickactions.tweaks
 
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
@@ -23,14 +24,14 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -185,7 +186,7 @@ fun TweakScheduleScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(text = labelSelectTweakTable, style = MaterialTheme.typography.titleMedium)
-                    TextButton(onClick = { showCourseTablePicker = true }) {
+                    TextButton(onClick = { showCourseTablePicker = true }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(text = uiState.selectedCourseTable?.name ?: actionSelectTable)
                             Icon(
@@ -319,12 +320,12 @@ fun TweakScheduleScreen(
                         }
                         showFromDatePicker = false
                     }
-                ) {
+                , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_confirm))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showFromDatePicker = false }) {
+                TextButton(onClick = { showFromDatePicker = false }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_cancel))
                 }
             }
@@ -371,12 +372,12 @@ fun TweakScheduleScreen(
                         }
                         showToDatePicker = false
                     }
-                ) {
+                , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_confirm))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showToDatePicker = false }) {
+                TextButton(onClick = { showToDatePicker = false }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_cancel))
                 }
             }
@@ -444,12 +445,12 @@ private fun WorkdayQuickPickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onOpenFullDatePicker) {
+            TextButton(onClick = onOpenFullDatePicker, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_custom_date))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismissRequest) {
+            TextButton(onClick = onDismissRequest, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_cancel))
             }
         }
@@ -461,7 +462,7 @@ private fun TweakModeSelector(currentMode: TweakMode, onModeSelected: (TweakMode
     val (_, label) = getTweakModeDisplayInfo(currentMode)
 
     Box {
-        TextButton(onClick = { expanded = true }) {
+        TextButton(onClick = { expanded = true }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
             Text(text = label, style = MaterialTheme.typography.labelLarge)
             Icon(vectorResource(Res.drawable.arrow_drop_down_24px), contentDescription = null)
         }
@@ -528,7 +529,7 @@ private fun DateButton(label: String, date: LocalDate, onClick: () -> Unit) {
     )
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = label, style = MaterialTheme.typography.bodySmall)
-        TextButton(onClick = onClick) { Text(text = dateDisplay, style = MaterialTheme.typography.titleMedium) }
+        TextButton(onClick = onClick, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(text = dateDisplay, style = MaterialTheme.typography.titleMedium) }
     }
 }
 

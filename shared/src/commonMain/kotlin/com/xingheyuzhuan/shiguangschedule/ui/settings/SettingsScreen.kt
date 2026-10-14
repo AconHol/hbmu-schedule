@@ -1,7 +1,8 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 // Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.settings
 
-import androidx.compose.material3.ListItem
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsListItem as ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Surface
 import shiguangschedule.shared.generated.resources.palette_24px
@@ -26,15 +27,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsDivider as HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import shiguangschedule.shared.generated.resources.arrow_back_24px
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -253,12 +254,12 @@ fun SettingsScreen(
                         TextButton(onClick = {
                             datePickerState.selectedDateMillis?.let { viewModel.onSemesterStartDateSelected(it) }
                             showDatePickerModal = false
-                        }) {
+                        }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                             Text(stringResource(Res.string.action_confirm))
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showDatePickerModal = false }) {
+                        TextButton(onClick = { showDatePickerModal = false }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                             Text(stringResource(Res.string.action_cancel))
                         }
                     }
@@ -568,12 +569,12 @@ fun ManualWeekPickerDialog(
                     dialogSelectedValue.filter { it.isDigit() }.toIntOrNull()
                 }
                 onConfirm(weekNumber)
-            }) {
+            }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_confirm))
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
+            Button(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_cancel))
             }
         }
@@ -620,12 +621,12 @@ fun DayOfWeekPickerDialog(
             Button(onClick = {
                 val selectedDayInt = dayOptionsMap[dialogSelectedText] ?: DayOfWeek.MONDAY.isoDayNumber
                 onConfirm(selectedDayInt)
-            }) {
+            }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_confirm))
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
+            Button(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_cancel))
             }
         }
@@ -659,12 +660,12 @@ private fun NumberPickerDialog(
             )
         },
         confirmButton = {
-            Button(onClick = { onConfirm(dialogSelectedValue) }) {
+            Button(onClick = { onConfirm(dialogSelectedValue) }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_confirm))
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
+            Button(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_cancel))
             }
         }

@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.xingheyuzhuan.shiguangschedule.ui.settings.quickactions.delete
 
 import androidx.compose.foundation.BorderStroke
@@ -22,15 +23,15 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsCard as Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsDivider as HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
@@ -41,7 +42,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import com.xingheyuzhuan.shiguangschedule.ui.settings.ExpressiveSettingsTopAppBar as TopAppBar
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -162,7 +163,7 @@ fun QuickDeleteScreen(
                             .fillMaxWidth()
                             .padding(16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                    ) {
+                    , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                         Icon(vectorResource(Res.drawable.delete_24px), null)
                         Spacer(Modifier.size(8.dp))
                         Text(stringResource(Res.string.confirm_delete))
@@ -298,12 +299,12 @@ fun QuickDeleteScreen(
                         viewModel.executeDelete() // 真正执行删除
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                ) {
+                , shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_confirm))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirmDialog = false }) {
+                TextButton(onClick = { showConfirmDialog = false }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.action_cancel))
                 }
             }
@@ -389,7 +390,7 @@ fun FilterBottomSheet(
                 Text(stringResource(Res.string.label_day_of_week), style = MaterialTheme.typography.titleMedium)
                 TextButton(onClick = {
                     if (uiState.selectedDays.size == 7) viewModel.clearAllDays() else viewModel.selectAllDays()
-                }) {
+                }, shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                     Text(if (uiState.selectedDays.size == 7) stringResource(Res.string.action_deselect_all) else stringResource(Res.string.action_select_all))
                 }
             }
@@ -412,7 +413,7 @@ fun FilterBottomSheet(
             }
 
             Spacer(Modifier.height(24.dp))
-            Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth(), shapes = androidx.compose.material3.ButtonDefaults.shapes()) {
                 Text(stringResource(Res.string.action_confirm))
             }
         }
@@ -442,10 +443,10 @@ fun DateRangePickerModal(
                     }
                 },
                 enabled = state.selectedEndDateMillis != null
-            ) { Text(stringResource(Res.string.action_confirm)) }
+            , shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(stringResource(Res.string.action_confirm)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) }
+            TextButton(onClick = onDismiss, shapes = androidx.compose.material3.ButtonDefaults.shapes()) { Text(stringResource(Res.string.action_cancel)) }
         }
     ) {
         DateRangePicker(
