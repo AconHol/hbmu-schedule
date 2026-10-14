@@ -4,6 +4,12 @@ package com.xingheyuzhuan.shiguangschedule.ui.settings
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Surface
+import shiguangschedule.shared.generated.resources.palette_24px
+import shiguangschedule.shared.generated.resources.swap_horiz_24px
+import shiguangschedule.shared.generated.resources.calendar_today_24px
+import shiguangschedule.shared.generated.resources.list_alt_24px
+import shiguangschedule.shared.generated.resources.class_24px
+import shiguangschedule.shared.generated.resources.schedule_24px
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -185,6 +191,7 @@ fun SettingsScreen(
                     Card(onClick = { onNavigate(Destination.ThemeSettings) }, modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.extraLarge,
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
                         ListItem(headlineContent = { Text("主题与颜色") }, supportingContent = { Text("壁纸动态取色 · 自定义主色 · 深浅色模式") },
+                            leadingContent = { Icon(vectorResource(Res.drawable.palette_24px), null, tint = MaterialTheme.colorScheme.onSecondaryContainer) },
                             trailingContent = { Icon(vectorResource(Res.drawable.chevron_right_24px), null) },
                             colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent))
                     }
@@ -442,43 +449,50 @@ private fun AdvancedSettingsSection(onNavigate: (Destination) -> Unit) {
             SettingItem(
                 title = stringResource(Res.string.item_course_conversion),
                 subtitle = stringResource(Res.string.desc_course_conversion),
-                onClick = { onNavigate(Destination.CourseTableConversion) }
+                onClick = { onNavigate(Destination.CourseTableConversion) },
+                leadingIcon = vectorResource(Res.drawable.swap_horiz_24px)
             )
             SettingItem(
                 title = stringResource(Res.string.title_course_notification_settings),
                 subtitle = stringResource(Res.string.desc_notification_settings),
-                onClick = { onNavigate(Destination.NotificationSettings) }
+                onClick = { onNavigate(Destination.NotificationSettings) },
+                leadingIcon = vectorResource(Res.drawable.calendar_today_24px)
             )
             SettingItem(
                 title = stringResource(Res.string.title_manage_course_tables),
                 subtitle = stringResource(Res.string.desc_manage_course_tables),
-                onClick = { onNavigate(Destination.ManageCourseTables) }
+                onClick = { onNavigate(Destination.ManageCourseTables) },
+                leadingIcon = vectorResource(Res.drawable.list_alt_24px)
             )
             SettingItem(
                 title = stringResource(Res.string.item_course_management),
                 subtitle = stringResource(Res.string.desc_course_management),
-                onClick = { onNavigate(Destination.CourseManagementList) }
+                onClick = { onNavigate(Destination.CourseManagementList) },
+                leadingIcon = vectorResource(Res.drawable.class_24px)
             )
             SettingItem(
                 title = stringResource(Res.string.title_schedule_management),
                 subtitle = stringResource(Res.string.desc_schedule_management),
-                onClick = { onNavigate(Destination.TimeScheduleManagement) }
+                onClick = { onNavigate(Destination.TimeScheduleManagement) },
+                leadingIcon = vectorResource(Res.drawable.schedule_24px)
             )
             SettingItem(
                 title = stringResource(Res.string.item_personalization),
                 subtitle = stringResource(Res.string.desc_personalization),
-                onClick = { onNavigate(Destination.StyleSettings) }
+                onClick = { onNavigate(Destination.StyleSettings) },
+                leadingIcon = vectorResource(Res.drawable.palette_24px)
             )
             SettingItem(
                 title = stringResource(Res.string.holiday_management_title),
                 subtitle = stringResource(Res.string.holiday_management_desc),
-                onClick = { onNavigate(Destination.HolidayManagement) }
+                onClick = { onNavigate(Destination.HolidayManagement) },
+                leadingIcon = vectorResource(Res.drawable.calendar_today_24px)
             )
             SettingItem(
                 title = stringResource(Res.string.item_more_options),
                 subtitle = stringResource(Res.string.desc_more_options),
                 onClick = { onNavigate(Destination.MoreOptions) },
-                icon = vectorResource(Res.drawable.more_horiz_24px)
+                leadingIcon = vectorResource(Res.drawable.more_horiz_24px)
             )
         }
     }
@@ -492,11 +506,13 @@ private fun SettingItem(
     title: String,
     subtitle: String,
     icon: ImageVector = vectorResource(Res.drawable.chevron_right_24px),
+    leadingIcon: ImageVector? = null,
     onClick: (() -> Unit)? = null,
     trailingContent: @Composable () -> Unit = { Icon(icon, contentDescription = null) }
 ) {
     Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainer) {
     ListItem(
+        leadingContent = if (leadingIcon != null) ({ Icon(leadingIcon, null, tint = MaterialTheme.colorScheme.primary) }) else null,
         headlineContent = { Text(title, style = MaterialTheme.typography.bodyLarge) },
         supportingContent = { Text(subtitle, style = MaterialTheme.typography.bodySmall) },
         trailingContent = trailingContent,

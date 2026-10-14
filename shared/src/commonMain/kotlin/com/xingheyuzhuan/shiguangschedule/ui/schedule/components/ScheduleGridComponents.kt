@@ -356,7 +356,7 @@ private fun EditHandleDot() {
     Box(
         modifier = Modifier
             .size(12.dp)
-            .background(Color(0xFF2196F3), CircleShape)
+            .background(MaterialTheme.colorScheme.primary, CircleShape)
     )
 }
 

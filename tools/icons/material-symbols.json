@@ -1,0 +1,609 @@
+{
+  "publisher": "Google",
+  "license": "Apache-2.0",
+  "license_source": "https://raw.githubusercontent.com/google/material-design-icons/master/LICENSE",
+  "icons": {
+    "account_circle_24px": {
+      "symbol": "account_circle",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/account_circle/default/24px.svg",
+      "svg_sha256": "8bda1e281e9506dc94cffacd3aec9f67be8212567541d7ced183779f4f856fdf",
+      "xml_sha256": "28be363493cdac39c855b46cdb2c285939a07a6ffd3bc9b4641e9ee88b6e572b"
+    },
+    "account_circle_filled_24px": {
+      "symbol": "account_circle",
+      "fill": 1,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/account_circle/fill1/24px.svg",
+      "svg_sha256": "b91d5e234867a2ed950904c2d7503e97780c0d414cb7f9e573c505d5466db18e",
+      "xml_sha256": "c9eb08a17d4e2c8662d40381364142231eb27cb671e86a95645db27014910bf8"
+    },
+    "add_24px": {
+      "symbol": "add",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/add/default/24px.svg",
+      "svg_sha256": "747fe04ec3eb546a96f514a5d2df9e81be53397818b83f05630519ab008bb6e9",
+      "xml_sha256": "be0da9e2d80f5b49a096b0908459f5b1ee170de4dda9345f79dd8c74a19f9197"
+    },
+    "archive_24px": {
+      "symbol": "archive",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/archive/default/24px.svg",
+      "svg_sha256": "64498b4c2bcb0124b6d4d552ddcbb339f330d1a4879d68f3153f441defa81453",
+      "xml_sha256": "a9ffe4726b98798f6cd39e3671c840e7406bab0da525c5e5b4e27869645eac5b"
+    },
+    "arrow_back_24px": {
+      "symbol": "arrow_back",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/arrow_back/default/24px.svg",
+      "svg_sha256": "b9b58d54e13e0e3693a10d997c1001ec270c12eaa935f993cee1d8c916236ceb",
+      "xml_sha256": "bd553cedbaa537ddc7e8b54819550e0dfcbc781a79f4015abb048a5a519e92b7"
+    },
+    "arrow_downward_24px": {
+      "symbol": "arrow_downward",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/arrow_downward/default/24px.svg",
+      "svg_sha256": "f434d017632890936ecce60902286240b82682e18cebba6ec7a6aff2f93308ac",
+      "xml_sha256": "88d190211693598ee3e18ff7631846edf15be65c2aeeb4a4eedf6ee0ac1991e3"
+    },
+    "arrow_drop_down_24px": {
+      "symbol": "arrow_drop_down",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/arrow_drop_down/default/24px.svg",
+      "svg_sha256": "7516bc3be35139d76aa3d80b23ebab28d8fb1e5eaae40fef8bb8e33ad35bd708",
+      "xml_sha256": "0c95b41fe87ed53c8be5726281618293308c9b2ca381035d5e863cc4980ebcca"
+    },
+    "arrow_forward_24px": {
+      "symbol": "arrow_forward",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/arrow_forward/default/24px.svg",
+      "svg_sha256": "8c22701bd8e563e8f8bf6b89f0fc87fbe0a38c503bfcba196d2ba26d5644a7c5",
+      "xml_sha256": "77a3c2b74d3df4f328977f30969065f2c7626d5a7fb32c3c95bcc0c216bde873"
+    },
+    "award_star_24px": {
+      "symbol": "award_star",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/award_star/default/24px.svg",
+      "svg_sha256": "378b468896fe6ca3ff44bb67d41a4165bac25f276897a2978d3e62353e3ceb0a",
+      "xml_sha256": "bbb65bd5262a1cf28ee381da269eb2bd9ab677ab08183a34403df658bedcdfc2"
+    },
+    "build_24px": {
+      "symbol": "build",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/build/default/24px.svg",
+      "svg_sha256": "e4fa3a6f6c0b28d6e9c3b8043f7bff766013cc7c5b87aaced4de4569b90a8030",
+      "xml_sha256": "d6c9840ef5086adc6d079da2c0ddeb97f6f8b988e97b1c6fc7f5697ac3db49f2"
+    },
+    "calendar_today_24px": {
+      "symbol": "calendar_today",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/calendar_today/default/24px.svg",
+      "svg_sha256": "6728afdf8b07b6294e713097149ee0591dafd5dcb536084b907d90ad8e96e157",
+      "xml_sha256": "f42e052ed242a15adda5ca957dc7df9bf6e4c37c534fbcec090417e1d32a4dcd"
+    },
+    "check_24px": {
+      "symbol": "check",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/check/default/24px.svg",
+      "svg_sha256": "51e706757e18de60cb7ade1cf0ae272708932d36e417365f14977ee039cd85b8",
+      "xml_sha256": "d207784863aaec68a669d360a4c50c8cca1718d8552503a6041b5e9133b81c14"
+    },
+    "check_circle_24px": {
+      "symbol": "check_circle",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/check_circle/default/24px.svg",
+      "svg_sha256": "5c90d9aaa77eacf87ed8a5cedb6f9a1b7eba6ef41e6fbf7c9a1eb221ad59d2c9",
+      "xml_sha256": "192a929527c30349b6b31ea06d41394b4eb2e504abcc2b9b0ca07c7f14bdd867"
+    },
+    "chevron_right_24px": {
+      "symbol": "chevron_right",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/chevron_right/default/24px.svg",
+      "svg_sha256": "8cb67ac33f0e21e96a13b2274f21d27e96312097fea0c5260bf979ffea396140",
+      "xml_sha256": "a76f3c08d1dc1aa655baef6f183cb1cb49892441eb8106240bcdf42d1d713b29"
+    },
+    "class_24px": {
+      "symbol": "class",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/class/default/24px.svg",
+      "svg_sha256": "064659bdb31fe0a471a1bd696fc5c654ec823999dd7b6cf422d9b391a5f135cd",
+      "xml_sha256": "683f6a1e5d064768a1378b6ace33e570a4f71c2b2d92f4249899cb9413ecf403"
+    },
+    "close_24px": {
+      "symbol": "close",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/close/default/24px.svg",
+      "svg_sha256": "fabc7e16160e93ed11d6d72b87f5c67092d04abfcc1fc2410fab1abe075cd8fc",
+      "xml_sha256": "fa472840e8629f8425c6c429d5d1c814959bdfc0ecc27e56b57a6dde2688df26"
+    },
+    "cloud_24px": {
+      "symbol": "cloud",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/cloud/default/24px.svg",
+      "svg_sha256": "a432f176f21f1f8b66fb55ba64507d4280f3ea82c3e4df0e360ead8907f8c27c",
+      "xml_sha256": "8c3d9f58c7457e65ab5e8e130dd66b4b7381855c17962055aa911f74a7333da4"
+    },
+    "code_24px": {
+      "symbol": "code",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/code/default/24px.svg",
+      "svg_sha256": "df0d955362c399d7246a437f817cd83b8da4f5da631a03882687c986ebc71785",
+      "xml_sha256": "b43ecb31dff0302b6a85aca46ed3211fbbb381b92b349a56f5c81972a21b27e0"
+    },
+    "content_copy_24px": {
+      "symbol": "content_copy",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/content_copy/default/24px.svg",
+      "svg_sha256": "01af7f7a06b22849cd0eb73d14953695cba54939f51afdf3e30aeb20cf90d543",
+      "xml_sha256": "6abcf3a7bc89ec180d84aea5a65b89e5db796b34c3e2ca249942c86ac156097e"
+    },
+    "contrast_24px": {
+      "symbol": "contrast",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/contrast/default/24px.svg",
+      "svg_sha256": "6bf20f30d5f832cfcfccc2a10e5488cbe6dc7721c4a12a2a83d7d553c404e55a",
+      "xml_sha256": "52b2af2877dfd4521c1b07fe730438be6c5ae634af64a558d240427a6fd9b41f"
+    },
+    "delete_24px": {
+      "symbol": "delete",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/delete/default/24px.svg",
+      "svg_sha256": "23c44049fc52eeb04334d3ccd3580a4304df724dda3b5b1017ab76f01a260049",
+      "xml_sha256": "31a640fe055671ff76c1375619266413224b176781c6d204e8f0450f8af2502b"
+    },
+    "desktop_windows_24px": {
+      "symbol": "desktop_windows",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/desktop_windows/default/24px.svg",
+      "svg_sha256": "d8a0ac3076f77d4c069e8767fc2e5cb71684b76efd5d4d3b8d0a172a0941313e",
+      "xml_sha256": "05ee00e451cf6510a93596a92402eb7a97aad4cffac86beb81f5deeff71d06ee"
+    },
+    "developer_mode_24px": {
+      "symbol": "developer_mode",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/developer_mode/default/24px.svg",
+      "svg_sha256": "7fc32d707a20ce1e66b19befb52e86682b3b09d8008654823a6272bbc6d653fb",
+      "xml_sha256": "d269e8572978854bde7fb710d8e38ce42a47552e50eb26719af48df0214128f1"
+    },
+    "done_all_24px": {
+      "symbol": "done_all",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/done_all/default/24px.svg",
+      "svg_sha256": "d9dba40e72559d7253f133fc9b633a974cea683dc150c85cddf6108d0d515069",
+      "xml_sha256": "a863a93a3d37fcda1a9401541b5b29a6fb0cdc4087d7f66c041fef4986ddbacd"
+    },
+    "double_arrow_24px": {
+      "symbol": "double_arrow",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/double_arrow/default/24px.svg",
+      "svg_sha256": "9299e2ea36c1f7c8514b5c0feca4f3dfbc08c5c8d68bbb87edbb9c526238a330",
+      "xml_sha256": "2788148ac75319f449020988794384e2179b13a2af491b6f29e93dc5e2562f80"
+    },
+    "download_24px": {
+      "symbol": "download",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/download/default/24px.svg",
+      "svg_sha256": "93215119b09a9d51898b722eaecf71d2fdd0173a2ba36f7c7d59e806476a2bb9",
+      "xml_sha256": "4811bbf2794631a0f79ef1c9395139531cbe7ada32ead112a416829f933db8f6"
+    },
+    "edit_24px": {
+      "symbol": "edit",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/edit/default/24px.svg",
+      "svg_sha256": "65d2e92a5a2d761c82125ecd95aa6fd8a389b6153a631ccc260c9aa658f65ef6",
+      "xml_sha256": "c732b7ebcf1e35b7aff32d33a510fb23aa419af2c5b420d73165d605d1078e4b"
+    },
+    "favorite_24px": {
+      "symbol": "favorite",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/favorite/default/24px.svg",
+      "svg_sha256": "94f313e198e92cf1b049540e66990139040c70eadc37bf8a5a32d12a311acac9",
+      "xml_sha256": "848c2ed7d58749c048d9c65a5b1e316de511db3f8c7a196a29b40a9ba82fb159"
+    },
+    "filter_list_24px": {
+      "symbol": "filter_list",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/filter_list/default/24px.svg",
+      "svg_sha256": "934f99cec288af29e29ef23c6d58c5fb122df12754b15d3e41d6da5873c06dc6",
+      "xml_sha256": "ab3187bf6cd2c909ce6af56c348c88a61696537fb50a20619210496ca72dc23c"
+    },
+    "home_24px": {
+      "symbol": "home",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/home/default/24px.svg",
+      "svg_sha256": "b29e5deb4467a06ec02ac358516fd8e5955c0d704fba8776f055b638cfbab607",
+      "xml_sha256": "3428d6953230e67c23f2967e5cbae6eeb3fcb5d30932b218494c17fd059b64a7"
+    },
+    "image_24px": {
+      "symbol": "image",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/image/default/24px.svg",
+      "svg_sha256": "a53eee7018c2f02e0d825f3c8acb11cd1aa80161a09ce5d34c7579eb32fd3094",
+      "xml_sha256": "a11c4d83397e949185fae3c8248000cbc6dcd17beecd73359d4e1d7b60da2f6f"
+    },
+    "info_24px": {
+      "symbol": "info",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/info/default/24px.svg",
+      "svg_sha256": "9ed82eec5bc113b414de4b30f5375e9ad38a1e7811a596cfd8671dc70536e0d8",
+      "xml_sha256": "6b2b518c06ab66500f7dd34821e589b2622740f9b05b34ee62087b283694f58f"
+    },
+    "language_24px": {
+      "symbol": "language",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/language/default/24px.svg",
+      "svg_sha256": "71b28a5c798ba00c4b3b331835a24c80dbfca40036ad90183bca759f19ee0862",
+      "xml_sha256": "25d79f54367dbba07db080ab93bfa58f67960a9ecfd4750627bcedd86013847e"
+    },
+    "link_24px": {
+      "symbol": "link",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/link/default/24px.svg",
+      "svg_sha256": "9c56fecf20eadbb91ff1cde7d8bf45030fc598d7c12824cfa67d5fd98d87fa9d",
+      "xml_sha256": "ce7254adf406e7f70be4e5b9ea660067c91ddd08f69ad94c201bf2a35797ad11"
+    },
+    "list_alt_24px": {
+      "symbol": "list_alt",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/list_alt/default/24px.svg",
+      "svg_sha256": "15d52e5cfb686039fb6d3be264ff0cb5f3b7919e8f5dcd1004107fc2a28747f4",
+      "xml_sha256": "3ca25a2c763e263046b5964bf1eda7241b5a030128d77161707bb6074fc81667"
+    },
+    "location_on_24px": {
+      "symbol": "location_on",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/location_on/default/24px.svg",
+      "svg_sha256": "594b3f4b79ef6f6d3503b38e0713459790f49805617af85c55843c8e07276ce1",
+      "xml_sha256": "62b96f5c0ac5f73d66130234cccc5038227b2e7e1fd1d081ac32a09e3c9df4c5"
+    },
+    "menu_open_24px": {
+      "symbol": "menu_open",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/menu_open/default/24px.svg",
+      "svg_sha256": "c5cd2aafec2661c1de0f3ce7b342833d6889edb0d3bf1cf6358ceca24166efe7",
+      "xml_sha256": "1892532cca10524765b139d6f16a14ffb5a0c57d378c5e29c5c23f2393ac437a"
+    },
+    "more_horiz_24px": {
+      "symbol": "more_horiz",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/more_horiz/default/24px.svg",
+      "svg_sha256": "498ade89fbbdd4f4ab9b90bb49bae4cc6b2dc0ff0f019b6b051ac641a7bd5872",
+      "xml_sha256": "95992eedd6aeee6fb47f784b305e7c0f6dbc2a2b240296d2a0275c575474d1f8"
+    },
+    "more_vert_24px": {
+      "symbol": "more_vert",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/more_vert/default/24px.svg",
+      "svg_sha256": "f3959916d17e6ec783267c2753bdddfe4b3f4b12b835c875231dbbba792f070b",
+      "xml_sha256": "3cbfad81bc2e08d2c287e568d9601f1a8bca196fec3a6e149e316bc135750f82"
+    },
+    "palette_24px": {
+      "symbol": "palette",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/palette/default/24px.svg",
+      "svg_sha256": "66b356824699db041160ab04225e11ed243ad3f2e95a780adf851ef13c90a163",
+      "xml_sha256": "b8a4d64dec09f9ca6cc87d484b532532500fe24d49146c943ffccda8a64833b5"
+    },
+    "people_alt_24px": {
+      "symbol": "people_alt",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/people_alt/default/24px.svg",
+      "svg_sha256": "50275e683e73b53259a21dca4a13fbb478abb987306a371220d95c4d900ac4c5",
+      "xml_sha256": "02f0a86c5a1d68c8b0db1d94481cf922e5479d78ffb56fb8d13e73f7406890da"
+    },
+    "person_24px": {
+      "symbol": "person",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/person/default/24px.svg",
+      "svg_sha256": "ce9c94f603d60efb6f945efe51adac5e8453accb0fdbd5e69bdf5ba56fdb249c",
+      "xml_sha256": "c491b4ec1810bdfb857eb0941b7196eb066d1d65f73bee587b6fc2da781b937e"
+    },
+    "phone_android_24px": {
+      "symbol": "phone_android",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/phone_android/default/24px.svg",
+      "svg_sha256": "50957ce68d52ef7e7929cc3f6a5c5ea1ee6e842eb05484788f31796156d6e95f",
+      "xml_sha256": "9bc0f3cd7732ecdb7b38ce1b7079ae5c20279ce5e015aa8d9a9bf6abbb87dafc"
+    },
+    "refresh_24px": {
+      "symbol": "refresh",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/refresh/default/24px.svg",
+      "svg_sha256": "9287665cb15b61441487cb2d579ba5630f9b249dbcaa5991e7028aa6f925edf8",
+      "xml_sha256": "0e42a02d2ee58c55e82cffdf8cb6239754066c0aeb2405eadf0bfd2cc52fdcdb"
+    },
+    "save_24px": {
+      "symbol": "save",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/save/default/24px.svg",
+      "svg_sha256": "20f067b6b07e314eb96244808bcd7c387e36ddec05682b82b92b9d1955aa0562",
+      "xml_sha256": "32db0b1495e3ae117b049452f4e5960938847bc1aa0eb5ac9cb18fcd8bf41ccf"
+    },
+    "schedule_24px": {
+      "symbol": "schedule",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/schedule/default/24px.svg",
+      "svg_sha256": "a0521ebc40eafb5a1c02dc3c966d8f342688fae78062b46ade248af94a161b28",
+      "xml_sha256": "358b41956a30a1e83a111e5dd30fd7303b154e7c247c832a23c71c2b5b3608d8"
+    },
+    "school_24px": {
+      "symbol": "school",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/school/default/24px.svg",
+      "svg_sha256": "4b19c6f8ffc399ca3f30fc230ab0e8b32eb7460a78a5ece4354a0f1a503266ee",
+      "xml_sha256": "7a1fe873d48ab95a2190c364638bf507db8f0262b1c208e22adcf014ba4b844c"
+    },
+    "search_24px": {
+      "symbol": "search",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/search/default/24px.svg",
+      "svg_sha256": "8d12ac6ba27a23ccf0e57794c28481ce9c978efcb2f80ba6d2979ccdf238c993",
+      "xml_sha256": "3d231dd469e1ed0682f9cdd5a444da4f327832800ac0dacfa0b5897844dea46e"
+    },
+    "sticky_note_2_24px": {
+      "symbol": "sticky_note_2",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/sticky_note_2/default/24px.svg",
+      "svg_sha256": "1bb455f47f3c381da8b431871fec49fe4d8c24c0cf18af7226a2469ca3af5f64",
+      "xml_sha256": "65f0982b183821babfd5a2230911e4620ab22c16e7c18f3dd4bda4b073e1d734"
+    },
+    "swap_horiz_24px": {
+      "symbol": "swap_horiz",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/swap_horiz/default/24px.svg",
+      "svg_sha256": "432c252c11d6052f7a4ab09ea387345672677a0e252b20cd9e25c7bc4b35afee",
+      "xml_sha256": "28451d96670b070d1bc23fb748efb63c3dbd265410602caeab0285ae93d47e8b"
+    },
+    "sync_alt_24px": {
+      "symbol": "sync_alt",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/sync_alt/default/24px.svg",
+      "svg_sha256": "7218f04c20121d51a88308d30b2aec04e661841139dd73b0f919c7b21b7c4242",
+      "xml_sha256": "219c74daaa37e896df2675e57ac470a5f2751699b0410839f6fc0d3bfb8a9179"
+    },
+    "tune_24px": {
+      "symbol": "tune",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/tune/default/24px.svg",
+      "svg_sha256": "0ac6c5142a8b3625605295c980a2538d3685eafa4acdc10d3c139d8e1faab849",
+      "xml_sha256": "50ab04e475fb0790403c0e285bdcfb33c2c8508263efce3cfd95143e8cc36d56"
+    },
+    "update_24px": {
+      "symbol": "update",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/update/default/24px.svg",
+      "svg_sha256": "6b17f0bfefefc3e196da5e43669df96938763e2bc51eda099f490e80fa68afa7",
+      "xml_sha256": "83337f0b54d526932d7d2da00c65526e436dd5dc96be169a8ce1b28c21393d2f"
+    },
+    "upload_24px": {
+      "symbol": "upload",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/upload/default/24px.svg",
+      "svg_sha256": "a180496bf6440e9c45f1ea4839580cf1349e1f22ceaa453122156cfa5c819e31",
+      "xml_sha256": "ad2ed7f97f31d602e1cb5f2285af8ca114e41a31c5d9212cd62071751032ce48"
+    },
+    "view_agenda_24px": {
+      "symbol": "view_agenda",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/view_agenda/default/24px.svg",
+      "svg_sha256": "33bd7f002a3e33803c460acffd53528994301c21df5060e4a7eecb53337269be",
+      "xml_sha256": "b78da73a910d02e55a4d7f18ab60848d8aadd32450a21c1e41062861505e5b60"
+    },
+    "view_agenda_filled_24px": {
+      "symbol": "view_agenda",
+      "fill": 1,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/view_agenda/fill1/24px.svg",
+      "svg_sha256": "0a420c98eac9bf0b91163c2f3a568764b111b13865994b2692e99bfee9500a73",
+      "xml_sha256": "01fcad2556bd13328b7caf13add7b132c6e6b0ad8262f260dd45a48b85f4c6f4"
+    },
+    "view_week_24px": {
+      "symbol": "view_week",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/view_week/default/24px.svg",
+      "svg_sha256": "0c606099b83fb36881c5c03e2cae5470176809e4752ef1326224045f6cdb1fc9",
+      "xml_sha256": "e7f0be74fba330501e04b607a9547cdd74aca9adc97e95e62386dcd83777466a"
+    },
+    "view_week_filled_24px": {
+      "symbol": "view_week",
+      "fill": 1,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/view_week/fill1/24px.svg",
+      "svg_sha256": "46f089d6e733bbb2bc2993f6251fd4ec0f7c5582e9410ff9862402944e333630",
+      "xml_sha256": "71e21a48607bb9cbc617409619bba255910c266b58c76939ad0ff7f01984e2b0"
+    },
+    "visibility_24px": {
+      "symbol": "visibility",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/visibility/default/24px.svg",
+      "svg_sha256": "fdff08ac407f71d5b2a4d33b7f06693df3d3d9ecd368c997d0c1a3d6cfc35068",
+      "xml_sha256": "43e475acaaba4e777f67754b7b5d3be82f23f1f5e67830be47db7d30f13259fb"
+    },
+    "visibility_off_24px": {
+      "symbol": "visibility_off",
+      "fill": 0,
+      "style": "Rounded",
+      "weight": 400,
+      "optical_size": 24,
+      "source": "https://fonts.gstatic.cn/s/i/short-term/release/materialsymbolsrounded/visibility_off/default/24px.svg",
+      "svg_sha256": "ab88d1ce3372969907d0294f8b7596e5f635797a87fce1ee2e372f866088fee6",
+      "xml_sha256": "a394cc651f48f96f5f732083bb7ba3c6dae8cbaa4c63a6020664ee17b2433a76"
+    }
+  },
+  "icon_font_bundled": false,
+  "xml_hash_normalization": "UTF-8 LF"
+}

@@ -152,7 +152,10 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                         OutlinedTextField(password, { password = it }, label = { Text("教务密码") }, singleLine = true, enabled = !state.busy,
                             visualTransformation = if (visiblePassword) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), modifier = Modifier.fillMaxWidth(),
-                            trailingIcon = { TextButton(onClick = { visiblePassword = !visiblePassword }) { Text(if (visiblePassword) "隐藏" else "显示") } })
+                            trailingIcon = { IconButton(onClick = { visiblePassword = !visiblePassword }) {
+                                Icon(vectorResource(if (visiblePassword) Res.drawable.visibility_off_24px else Res.drawable.visibility_24px),
+                                    if (visiblePassword) "隐藏密码" else "显示密码", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            } })
                         AnimatedVisibility(state.requiresManualCaptcha && state.captcha != null) {
                             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {

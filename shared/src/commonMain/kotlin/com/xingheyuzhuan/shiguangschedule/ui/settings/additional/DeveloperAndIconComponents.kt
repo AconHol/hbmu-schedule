@@ -7,7 +7,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,7 +16,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
@@ -28,27 +29,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import shiguangschedule.shared.generated.resources.Res
 import shiguangschedule.shared.generated.resources.a11y_app_icon
 import shiguangschedule.shared.generated.resources.developer_mode_24px
-import shiguangschedule.shared.generated.resources.ic_launcher_foreground
+import shiguangschedule.shared.generated.resources.hbmu_app_mark
 import shiguangschedule.shared.generated.resources.item_developer_options
-
-// 图标背景颜色定义
-private val NormalIconBgColor = Color(0xFF73CAF8)
-private val DeveloperIconBgColor = Color(0xFFBD0000)
 
 /**
  * 动态 App 图标头部组件（包含连续 5 次点击解锁开发者模式逻辑）
  */
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun DynamicAppIconHeader(
     isDeveloperModeEnabled: Boolean,
     onTriggerDeveloperMode: () -> Unit,
@@ -57,16 +51,21 @@ fun DynamicAppIconHeader(
     var clickCount by remember { mutableIntStateOf(0) }
 
     // 背景色过渡动画
-    val targetColor = if (isDeveloperModeEnabled) DeveloperIconBgColor else NormalIconBgColor
+    val colors = MaterialTheme.colorScheme
+    val targetColor = if (isDeveloperModeEnabled) colors.tertiaryContainer else colors.primaryContainer
     val animatedBgColor by animateColorAsState(
         targetValue = targetColor,
-        animationSpec = tween(durationMillis = 400)
+        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()
+    )
+    val foreground by animateColorAsState(
+        targetValue = if (isDeveloperModeEnabled) colors.onTertiaryContainer else colors.onPrimaryContainer,
+        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()
     )
 
     Box(
         modifier = modifier
             .size(120.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(MaterialTheme.shapes.extraLarge)
             .background(animatedBgColor)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -80,13 +79,11 @@ fun DynamicAppIconHeader(
             },
         contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(Res.drawable.ic_launcher_foreground),
+        Icon(
+            imageVector = vectorResource(Res.drawable.hbmu_app_mark),
             contentDescription = stringResource(Res.string.a11y_app_icon),
-            modifier = Modifier
-                .fillMaxSize()
-                .scale(1.3f),
-            contentScale = ContentScale.Fit
+            modifier = Modifier.fillMaxSize(),
+            tint = foreground
         )
     }
 }

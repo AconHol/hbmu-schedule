@@ -44,7 +44,7 @@ fun main(args: Array<String>): Unit = runBlocking {
     val output = File(System.getenv("HBMU_PREVIEW_OUTPUT") ?: "build/hbmu-preview").apply { mkdirs() }
     withContext(Dispatchers.Main) {
         for ((name, destination) in listOf("today" to Destination.TodaySchedule, "week" to Destination.CourseSchedule, "academic" to Destination.Hbmu, "tools" to Destination.Settings,
-            "contributors" to Destination.ContributionList, "theme" to Destination.ThemeSettings)) {
+            "contributors" to Destination.ContributionList, "theme" to Destination.ThemeSettings, "about" to Destination.MoreOptions)) {
             for (dark in listOf(false, true)) {
                 val scene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
                     ShiguangScheduleTheme(darkTheme = dark, dynamicColor = false) {
