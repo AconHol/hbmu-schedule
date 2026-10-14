@@ -32,6 +32,11 @@ fun HbmuWeekHeader(weekTitle: String, firstDate: LocalDate, lastDate: LocalDate,
         containerColor = colors.surfaceContainerHigh,
         contentColor = colors.onSurfaceVariant
     )
+    // Half-round outer ends, with straight edges facing the connected week selector.
+    val previousShape = RoundedCornerShape(topStartPercent = 100, topEndPercent = 0,
+        bottomEndPercent = 0, bottomStartPercent = 100)
+    val nextShape = RoundedCornerShape(topStartPercent = 0, topEndPercent = 100,
+        bottomEndPercent = 100, bottomStartPercent = 0)
     Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = ConnectedScheduleLayout.PageMargin)
         .padding(top = 8.dp, bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(Modifier.fillMaxWidth().heightIn(min = 64.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -57,8 +62,8 @@ fun HbmuWeekHeader(weekTitle: String, firstDate: LocalDate, lastDate: LocalDate,
             horizontalArrangement = Arrangement.spacedBy(ConnectedScheduleLayout.Gap)) {
             FilledTonalButton(onClick = onPrevious, modifier = Modifier.width(48.dp).fillMaxHeight(),
                 shapes = ButtonDefaults.shapes(
-                    shape = RoundedCornerShape(16.dp),
-                    pressedShape = RoundedCornerShape(12.dp)),
+                    shape = previousShape,
+                    pressedShape = previousShape),
                 colors = controlColors,
                 contentPadding = PaddingValues(0.dp)) { Icon(vectorResource(Res.drawable.chevron_right_24px), "上一周", Modifier.rotate(180f)) }
             FilledTonalButton(onClick = onSelectWeek, modifier = Modifier.weight(1f).heightIn(min = 56.dp)
@@ -80,8 +85,8 @@ fun HbmuWeekHeader(weekTitle: String, firstDate: LocalDate, lastDate: LocalDate,
             }
             FilledTonalButton(onClick = onNext, modifier = Modifier.width(48.dp).fillMaxHeight(),
                 shapes = ButtonDefaults.shapes(
-                    shape = RoundedCornerShape(16.dp),
-                    pressedShape = RoundedCornerShape(12.dp)),
+                    shape = nextShape,
+                    pressedShape = nextShape),
                 colors = controlColors,
                 contentPadding = PaddingValues(0.dp)) { Icon(vectorResource(Res.drawable.chevron_right_24px), "下一周") }
         }
