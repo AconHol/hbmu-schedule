@@ -1,5 +1,5 @@
 <!-- Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained. -->
-# 课程表 · 学习项目
+# 对于HBMU特别适配课程表
 
 面向 HBMU 课表场景的个人 Android 开发学习与研究项目，基于 [拾光课程表 v2.1.0](https://github.com/ShiGuangSchedule/shiguangschedule/releases/tag/v2.1.0) 改造。保留完整上游 Git 历史、作者署名与 Apache 2.0 许可证。
 
