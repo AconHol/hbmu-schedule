@@ -26,8 +26,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
@@ -53,11 +55,11 @@ fun ScheduleGrid(
     style: ScheduleGridStyleComposed,
     modifier: Modifier = Modifier
 ) {
-    BoxWithConstraints(modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier.fillMaxSize().padding(horizontal = ConnectedScheduleLayout.PageMargin)) {
         val density = LocalDensity.current
         val horizontalScroll = rememberScrollState()
-        val minimumDayWidth = (if (viewState.showWeekends) 60.dp else 56.dp) * density.fontScale.coerceAtLeast(1f)
-        val contentWidth = maxOf(maxWidth, minimumDayWidth * (if (viewState.showWeekends) 7 else 5) + style.timeColumnWidth + 24.dp)
+        val minimumDayWidth = (if (viewState.showWeekends) 36.dp else 48.dp) * maxOf(density.fontScale, style.fontScale, 1f)
+        val contentWidth = maxOf(maxWidth, minimumDayWidth * (if (viewState.showWeekends) 7 else 5) + style.timeColumnWidth)
 
         LaunchedEffect(viewState.mergedCourses) {
             state.resetAllStates()
@@ -75,10 +77,12 @@ fun ScheduleGrid(
         val maxGridSections = if (is24HourMode) 24 else viewState.timeSlots.size
 
         val totalGridHeight = style.sectionHeight * maxGridSections
-        val gridLineColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.22f)
+        val gridLineColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
         val columnColor = MaterialTheme.colorScheme.surfaceContainerLow
-        val todayColumnColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = .16f)
-        val strokeWidthPx = 1f
+        val todayColumnColor = androidx.compose.ui.graphics.lerp(columnColor, MaterialTheme.colorScheme.primaryContainer, .35f)
+        val cellPadding = style.courseBlockOuterPadding.coerceIn(ConnectedScheduleLayout.HalfGap, 6.dp)
+        val navigationBottom = com.xingheyuzhuan.shiguangschedule.ui.components.LocalNavigationContentBottom.current
+        val navigationBottomPx = with(density) { navigationBottom.toPx() }
 
         val singleSchedulables = remember(viewState.mergedCourses, viewState.firstDayOfWeek, viewState.showWeekends) {
             calculateSingleSchedulables(viewState.mergedCourses, viewState.firstDayOfWeek, viewState.showWeekends)
@@ -182,22 +186,22 @@ fun ScheduleGrid(
             }
         }
 
-        Column(Modifier.fillMaxSize().horizontalScroll(horizontalScroll).width(contentWidth).padding(horizontal = 12.dp)) {
-            DayHeader(style, displayDays, viewState.dates, viewState.currentYear, viewState.currentWeek, viewState.todayIndex, gridLineColor, pageTextColor, pageSubTextColor, strokeWidthPx)
+        Column(Modifier.fillMaxSize().horizontalScroll(horizontalScroll).width(contentWidth)) {
+            DayHeader(style, displayDays, viewState.dates, viewState.currentYear, viewState.todayIndex, pageTextColor, pageSubTextColor)
 
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .onSizeChanged { state.viewportHeightPx = it.height.toFloat() }
+                    .onSizeChanged { state.viewportHeightPx = (it.height - navigationBottomPx).coerceAtLeast(0f) }
                     .verticalScroll(state = state.gridScrollState, enabled = state.expandedItem == null)
-                    .padding(bottom = com.xingheyuzhuan.shiguangschedule.ui.components.LocalNavigationContentBottom.current)
+                    .padding(bottom = navigationBottom)
             ) {
                 TimeColumn(
                     style = style, timeSlots = viewState.timeSlots, maxGridSections = maxGridSections,
                     is24HourMode = is24HourMode, onTimeSlotClicked = { actions.onTimeSlotClicked() },
-                    modifier = Modifier.height(totalGridHeight), lineColor = gridLineColor,
+                    modifier = Modifier.height(totalGridHeight),
                     currentSectionIndex = if (viewState.mergedCourses.any { block -> block.courses.any { !it.course.isCustomTime && it.course.customStartTime != null } }) -1 else viewState.currentSectionIndex, textColor = pageTextColor,
-                    subTextColor = pageSubTextColor, strokeWidthPx = strokeWidthPx,
+                    subTextColor = pageSubTextColor,
                     activeDragHour = activeDragHour,
                     activeDragMinuteStr = activeDragMinuteStr,
                     showClockTimes = viewState.mergedCourses.none { block -> block.courses.any {
@@ -212,7 +216,9 @@ fun ScheduleGrid(
 
                             Box(
                                 modifier = Modifier
-                                    .padding(style.courseBlockOuterPadding)
+                                    .padding(start = cellPadding, top = cellPadding,
+                                        end = if (item.columnIndex == displayDaysCount - 1 && item.subColumnIndex == item.subColumnCount - 1) 0.dp else cellPadding,
+                                        bottom = if (item.endSection >= maxGridSections) 0.dp else cellPadding)
                                     .zIndex(if (isExpanded) 2f else 0f)
                                     .then(
                                         if (!isExpanded) {
@@ -236,6 +242,10 @@ fun ScheduleGrid(
                                     style = style,
                                     timeSlots = viewState.timeSlots,
                                     isFloating = isExpanded,
+                                    blockShape = if (isExpanded) null else ConnectedScheduleLayout.shape(
+                                        bottomEnd = item.columnIndex == displayDaysCount - 1 &&
+                                            item.subColumnIndex == item.subColumnCount - 1 && item.endSection >= maxGridSections,
+                                        inner = style.courseBlockCornerRadius.coerceIn(0.dp, ConnectedScheduleLayout.InnerCorner)),
                                     modifier = if (isExpanded) {
                                         if (!item.parentBlock.isVisualDemoted) {
                                             Modifier.pointerInput(item, state.gridWidthPx) {
@@ -378,19 +388,18 @@ fun ScheduleGrid(
                         .onSizeChanged { state.gridWidthPx = it.width.toFloat() }
                         .drawBehind {
                             val cellWidth = size.width / displayDaysCount
-                            val gutter = 3.dp.toPx()
-                            for (i in 0 until displayDaysCount) {
-                                drawRoundRect(if (i == viewState.todayIndex) todayColumnColor else columnColor,
-                                    topLeft = Offset(i * cellWidth + gutter, 0f),
-                                    size = Size((cellWidth - gutter * 2).coerceAtLeast(0f), size.height),
-                                    cornerRadius = CornerRadius(16.dp.toPx()))
-                            }
-                            if (!style.hideGridLines) {
-                                for (i in 1 until maxGridSections) {
-                                    val y = i * sectionHeightPx
-                                    for (day in 0 until displayDaysCount) {
-                                        drawLine(gridLineColor, Offset(day * cellWidth + 8.dp.toPx(), y),
-                                            Offset((day + 1) * cellWidth - 8.dp.toPx(), y), strokeWidthPx)
+                            val gutter = ConnectedScheduleLayout.HalfGap.toPx()
+                            for (section in 0 until maxGridSections) {
+                                for (day in 0 until displayDaysCount) {
+                                    val lastDay = day == displayDaysCount - 1
+                                    val lastSection = section == maxGridSections - 1
+                                    val cellSize = Size((cellWidth - gutter - if (lastDay) 0f else gutter).coerceAtLeast(0f),
+                                        (sectionHeightPx - gutter - if (lastSection) 0f else gutter).coerceAtLeast(0f))
+                                    val outline = ConnectedScheduleLayout.shape(bottomEnd = lastDay && lastSection)
+                                        .createOutline(cellSize, layoutDirection, this)
+                                    translate(day * cellWidth + gutter, section * sectionHeightPx + gutter) {
+                                        drawOutline(outline, if (day == viewState.todayIndex) todayColumnColor else columnColor)
+                                        if (!style.hideGridLines) drawOutline(outline, gridLineColor, style = Stroke(.5.dp.toPx()))
                                     }
                                 }
                             }

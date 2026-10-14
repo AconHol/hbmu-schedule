@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawOutline
@@ -46,7 +47,8 @@ fun CourseBlock(
     style: ScheduleGridStyleComposed,
     timeSlots: List<TimeSlot>,
     modifier: Modifier = Modifier,
-    isFloating: Boolean = false // 标记当前块是否处于长按选中/悬浮状态
+    isFloating: Boolean = false, // 标记当前块是否处于长按选中/悬浮状态
+    blockShape: Shape? = null
 ) {
     val course = courseWrapper.course
     val isDarkTheme = LocalIsDarkTheme.current
@@ -100,7 +102,7 @@ fun CourseBlock(
     val borderColor = if (isFloating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
     val borderWidth = if (isFloating) 2.dp else 1.dp
     val borderAlpha = if (isFloating) 1.0f else style.courseBlockAlpha
-    val shape = RoundedCornerShape(style.courseBlockCornerRadius)
+    val shape = blockShape ?: RoundedCornerShape(style.courseBlockCornerRadius)
 
     val borderModifier = when (style.borderType) {
         BorderTypeProto.BORDER_TYPE_SOLID -> {

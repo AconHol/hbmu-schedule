@@ -40,7 +40,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -163,7 +162,6 @@ fun WeeklyScheduleScreen(
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val gridScrollState = rememberScrollState()
 
     val customTextColor = composedStyle.pageTextColor ?: MaterialTheme.colorScheme.onSurface
@@ -205,8 +203,7 @@ fun WeeklyScheduleScreen(
 
         Scaffold(
             modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
+                .fillMaxSize(),
             containerColor = Color.Transparent,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             topBar = {
@@ -239,7 +236,6 @@ fun WeeklyScheduleScreen(
                         top = scaffoldInnerPadding.calculateTopPadding(),
                         end = scaffoldInnerPadding.calculateEndPadding(LayoutDirection.Ltr)
                     )
-                    .padding(horizontal = 8.dp)
                     .fillMaxSize(),
                 beyondViewportPageCount = 1,
                 userScrollEnabled = !isGridHolding

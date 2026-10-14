@@ -160,23 +160,26 @@ fun rememberScheduleGridState(
 fun DayHeader(
     style: ScheduleGridStyleComposed,
     displayDays: List<String>, dates: List<String>, currentYear: String,
-    currentWeek: String?, todayIndex: Int, lineColor: Color,
-    textColor: Color, subTextColor: Color, strokeWidthPx: Float
+    todayIndex: Int, textColor: Color, subTextColor: Color
 ) {
     val colors = MaterialTheme.colorScheme
     Row(Modifier.fillMaxWidth().height(style.dayHeaderHeight.coerceAtLeast(60.dp)),
         verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.width(style.timeColumnWidth), horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(Modifier.width(style.timeColumnWidth).fillMaxHeight()
+            .padding(end = ConnectedScheduleLayout.HalfGap, bottom = ConnectedScheduleLayout.HalfGap)
+            .clip(ConnectedScheduleLayout.shape(topStart = true)).background(colors.surfaceContainerHighest), horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically)) {
             Text(currentYear, style = MaterialTheme.typography.labelSmall, color = subTextColor)
             Text("节次", style = MaterialTheme.typography.labelSmall, color = subTextColor)
         }
         displayDays.forEachIndexed { index, day ->
             val selected = index == todayIndex
-            Box(Modifier.weight(1f).padding(horizontal = 3.dp, vertical = 4.dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.weight(1f).padding(start = ConnectedScheduleLayout.HalfGap,
+                end = if (index == displayDays.lastIndex) 0.dp else ConnectedScheduleLayout.HalfGap,
+                bottom = ConnectedScheduleLayout.HalfGap), contentAlignment = Alignment.Center) {
                 androidx.compose.material3.Surface(
-                    shape = CircleShape,
-                    color = if (selected) colors.primary else colors.surfaceContainer,
+                    shape = ConnectedScheduleLayout.shape(topEnd = index == displayDays.lastIndex),
+                    color = if (selected) colors.primary else colors.secondaryContainer,
                     contentColor = if (selected) colors.onPrimary else textColor,
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -201,11 +204,9 @@ fun TimeColumn(
     is24HourMode: Boolean,
     onTimeSlotClicked: () -> Unit,
     modifier: Modifier,
-    lineColor: Color,
     currentSectionIndex: Int = -1,
     textColor: Color,
     subTextColor: Color,
-    strokeWidthPx: Float,
     activeDragHour: Int? = null,
     activeDragMinuteStr: String? = null,
     showClockTimes: Boolean = true
@@ -230,13 +231,11 @@ fun TimeColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(style.sectionHeight)
-                    .clickable { onTimeSlotClicked() }
-                    .background(if (isCurrentHourActive) MaterialTheme.colorScheme.primaryContainer.copy(0.4f) else Color.Transparent)
-                    .drawBehind {
-                        if (!style.hideGridLines) {
-                            drawLine(lineColor, Offset(6.dp.toPx(), size.height), Offset(size.width - 6.dp.toPx(), size.height), strokeWidthPx)
-                        }
-                    },
+                    .padding(top = ConnectedScheduleLayout.HalfGap, end = ConnectedScheduleLayout.HalfGap,
+                        bottom = if (index == maxGridSections - 1) 0.dp else ConnectedScheduleLayout.HalfGap)
+                    .clip(ConnectedScheduleLayout.shape(bottomStart = index == maxGridSections - 1))
+                    .background(if (isCurrentHourActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest)
+                    .clickable { onTimeSlotClicked() },
                 contentAlignment = if (is24HourMode) Alignment.TopCenter else Alignment.Center
             ) {
                 val h = maxHeight
@@ -259,7 +258,7 @@ fun TimeColumn(
                     verticalArrangement = if (is24HourMode) Arrangement.Top else Arrangement.Center,
                     modifier = Modifier
                         .padding(horizontal = 1.dp)
-                        .then(if (is24HourMode) Modifier.offset(y = (-7).dp) else Modifier)
+                        .then(if (is24HourMode) Modifier.padding(top = 4.dp) else Modifier)
                 ) {
                     if (is24HourMode) {
                         val formatHourStr = "${index.toString().padStart(2, '0')}:00"

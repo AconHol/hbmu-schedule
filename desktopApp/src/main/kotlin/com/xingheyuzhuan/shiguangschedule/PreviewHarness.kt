@@ -10,7 +10,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsNode
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import com.xingheyuzhuan.shiguangschedule.data.model.AppSettingsModel
+import com.xingheyuzhuan.shiguangschedule.data.model.schedule_style.ScheduleModeProto
 import com.xingheyuzhuan.shiguangschedule.data.repository.*
 import com.xingheyuzhuan.shiguangschedule.hbmu.*
 import com.xingheyuzhuan.shiguangschedule.ui.theme.ShiguangScheduleTheme
@@ -43,6 +48,36 @@ fun main(args: Array<String>): Unit = runBlocking {
     }
     val output = File(System.getenv("HBMU_PREVIEW_OUTPUT") ?: "build/hbmu-preview").apply { mkdirs() }
     withContext(Dispatchers.Main) {
+        suspend fun settle(scene: ImageComposeScene) {
+            repeat(8) { scene.render(System.nanoTime()).close(); delay(100) }
+        }
+        fun capture(scene: ImageComposeScene, name: String) {
+            scene.render(System.nanoTime()).use { rendered -> rendered.encodeToData(EncodedImageFormat.PNG)?.use { data ->
+                File(output, "$name.png").writeBytes(data.bytes)
+            } }
+        }
+        fun verticalScroller(scene: ImageComposeScene): SemanticsNode {
+            fun find(node: SemanticsNode): SemanticsNode? {
+                // The pager also retains offscreen grids with empty clipped bounds.
+                if (node.boundsInRoot.width > 0f && node.boundsInRoot.height > 0f &&
+                    node.config.getOrNull(SemanticsProperties.VerticalScrollAxisRange)?.maxValue?.invoke()?.let { it > 0f } == true) return node
+                return node.children.firstNotNullOfOrNull { find(it) }
+            }
+            return scene.semanticsOwners.firstNotNullOfOrNull { find(it.rootSemanticsNode) }
+                ?: error("Timetable must expose a vertical scrolling action")
+        }
+        suspend fun scrollGrid(scene: ImageComposeScene, toBottom: Boolean) {
+            val scroller = verticalScroller(scene)
+            val range = checkNotNull(scroller.config.getOrNull(SemanticsProperties.VerticalScrollAxisRange))
+            val action = checkNotNull(scroller.config.getOrNull(SemanticsActions.ScrollBy)?.action)
+            check(action(0f, if (toBottom) range.maxValue() else -range.maxValue()))
+            settle(scene)
+            if (kotlin.math.abs(range.value() - if (toBottom) range.maxValue() else 0f) >= 1f) settle(scene)
+            check(kotlin.math.abs(range.value() - if (toBottom) range.maxValue() else 0f) < 1f) {
+                "Grid scrolling stopped at ${range.value()} of ${range.maxValue()}, bottom=$toBottom, bounds=${scroller.boundsInRoot}"
+            }
+            println("Timetable QA: scroll=${range.value()}/${range.maxValue()}, bottom=$toBottom")
+        }
         for ((name, destination) in listOf("today" to Destination.TodaySchedule, "week" to Destination.CourseSchedule, "academic" to Destination.Hbmu, "tools" to Destination.Settings,
             "contributors" to Destination.ContributionList, "theme" to Destination.ThemeSettings, "about" to Destination.MoreOptions)) {
             for (dark in listOf(false, true)) {
@@ -57,8 +92,57 @@ fun main(args: Array<String>): Unit = runBlocking {
                         File(output, "$name-${if (dark) "dark" else "light"}.png").writeBytes(data.bytes)
                     }
                 }
+                if (name == "week") {
+                    val theme = if (dark) "dark" else "light"
+                    scrollGrid(scene, toBottom = true)
+                    capture(scene, "week-bottom-$theme")
+                    scrollGrid(scene, toBottom = false)
+                    scene.sendPointerEvent(PointerEventType.Press, Offset(88f, 184f))
+                    scene.sendPointerEvent(PointerEventType.Release, Offset(88f, 184f))
+                    settle(scene)
+                    capture(scene, "week-previous-$theme")
+                    scene.sendPointerEvent(PointerEventType.Press, Offset(632f, 184f))
+                    scene.sendPointerEvent(PointerEventType.Release, Offset(632f, 184f))
+                    settle(scene)
+                    capture(scene, "week-returned-$theme")
+                    scene.sendPointerEvent(PointerEventType.Press, Offset(88f, 184f))
+                    scene.sendPointerEvent(PointerEventType.Release, Offset(88f, 184f))
+                    settle(scene)
+                    scene.sendPointerEvent(PointerEventType.Press, Offset(610f, 300f))
+                    scene.sendPointerEvent(PointerEventType.Release, Offset(610f, 300f))
+                    settle(scene)
+                    capture(scene, "week-today-$theme")
+                    scene.sendPointerEvent(PointerEventType.Press, Offset(360f, 184f))
+                    scene.sendPointerEvent(PointerEventType.Release, Offset(360f, 184f))
+                    settle(scene)
+                    capture(scene, "week-selector-$theme")
+                }
                 scene.close()
             }
+        }
+        val settings = koin.get<AppSettingsRepository>()
+        val tableId = settings.getAppSettingsOnce().currentCourseTableId
+        val tableConfig = settings.getCourseConfigOnce(tableId)
+        val styles = koin.get<StyleSettingsRepository>()
+        val originalStyle = styles.getStyleOnce()
+        try {
+            if (tableConfig != null) settings.insertOrUpdateCourseConfig(tableConfig.copy(showWeekends = true))
+            for (mode in listOf(ScheduleModeProto.SECTION_MODE, ScheduleModeProto.TIME_24H_MODE)) {
+                styles.setScheduleMode(mode)
+                for (dark in listOf(false, true)) {
+                    val scene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
+                        ShiguangScheduleTheme(darkTheme = dark, dynamicColor = false) {
+                            Surface(Modifier.fillMaxSize()) { AppNavigation(Destination.CourseSchedule) }
+                        }
+                    }
+                    settle(scene)
+                    capture(scene, "week-${if (mode == ScheduleModeProto.TIME_24H_MODE) "24h" else "seven"}-${if (dark) "dark" else "light"}")
+                    scene.close()
+                }
+            }
+        } finally {
+            if (tableConfig != null) settings.insertOrUpdateCourseConfig(tableConfig)
+            styles.setScheduleMode(originalStyle.scheduleMode)
         }
         // Exercise the actual navigation controls, including the reverse direction.
         val navigationScene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
