@@ -74,7 +74,7 @@ class CourseTableRepository(
             id = tableId,
             name = null,
             createdAt = Clock.System.now().toEpochMilliseconds(),
-            defaultClassDuration = 45,
+            defaultClassDuration = 40,
             defaultBreakDuration = 10
         )
         val defaultTimeSlotsForNewTable = defaultTimeSlots.map {
@@ -117,7 +117,8 @@ class CourseTableRepository(
         val exclusiveTable = TimeTable(
             id = newTable.id,
             name = null,
-            createdAt = Clock.System.now().toEpochMilliseconds()
+            createdAt = Clock.System.now().toEpochMilliseconds(),
+            defaultClassDuration = 40
         )
         val defaultTimeSlotsForNewTable = defaultTimeSlots.map {
             it.copy(timeTableId = newTable.id)
@@ -380,7 +381,25 @@ class CourseTableRepository(
     }
 }
 
+// Local baseline calibrated from the October 2026 calendar boundaries.
+// Intermediate unreturned boundaries use 40-minute lessons / 10-minute breaks;
+// exact dated course overrides always take precedence over this fallback.
 internal val defaultTimeSlots = listOf(
+    TimeSlot(number = 1, startTime = "08:00", endTime = "08:40", timeTableId = "placeholder"),
+    TimeSlot(number = 2, startTime = "08:50", endTime = "09:30", timeTableId = "placeholder"),
+    TimeSlot(number = 3, startTime = "09:40", endTime = "10:20", timeTableId = "placeholder"),
+    TimeSlot(number = 4, startTime = "10:30", endTime = "11:10", timeTableId = "placeholder"),
+    TimeSlot(number = 5, startTime = "11:20", endTime = "12:00", timeTableId = "placeholder"),
+    TimeSlot(number = 6, startTime = "14:30", endTime = "15:10", timeTableId = "placeholder"),
+    TimeSlot(number = 7, startTime = "15:20", endTime = "16:00", timeTableId = "placeholder"),
+    TimeSlot(number = 8, startTime = "16:10", endTime = "16:50", timeTableId = "placeholder"),
+    TimeSlot(number = 9, startTime = "17:00", endTime = "17:40", timeTableId = "placeholder"),
+    TimeSlot(number = 10, startTime = "19:00", endTime = "19:40", timeTableId = "placeholder"),
+    TimeSlot(number = 11, startTime = "19:50", endTime = "20:30", timeTableId = "placeholder"),
+    TimeSlot(number = 12, startTime = "20:40", endTime = "21:20", timeTableId = "placeholder")
+)
+
+internal val legacyDefaultTimeSlots = listOf(
     TimeSlot(number = 1, startTime = "08:00", endTime = "08:45", timeTableId = "placeholder"),
     TimeSlot(number = 2, startTime = "08:50", endTime = "09:35", timeTableId = "placeholder"),
     TimeSlot(number = 3, startTime = "09:50", endTime = "10:35", timeTableId = "placeholder"),

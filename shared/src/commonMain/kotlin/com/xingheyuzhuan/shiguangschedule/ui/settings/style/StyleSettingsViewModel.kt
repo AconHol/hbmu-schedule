@@ -249,6 +249,11 @@ class StyleSettingsViewModel(
 
     // --- UI 渲染开关 API ---
 
+    /** 更新是否自动隐藏无课日期 */
+    fun updateHideEmptyDays(hide: Boolean) = viewModelScope.launch {
+        styleRepository.setHideEmptyDays(hide)
+    }
+
     /** 更新是否隐藏网格线 */
     fun updateHideGridLines(hide: Boolean) = viewModelScope.launch {
         styleRepository.setHideGridLines(hide)

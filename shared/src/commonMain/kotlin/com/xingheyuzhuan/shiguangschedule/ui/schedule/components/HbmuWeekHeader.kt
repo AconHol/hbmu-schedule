@@ -2,6 +2,7 @@
 package com.xingheyuzhuan.shiguangschedule.ui.schedule.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -56,8 +57,8 @@ fun HbmuWeekHeader(weekTitle: String, firstDate: LocalDate, lastDate: LocalDate,
             horizontalArrangement = Arrangement.spacedBy(ConnectedScheduleLayout.Gap)) {
             FilledTonalButton(onClick = onPrevious, modifier = Modifier.width(48.dp).fillMaxHeight(),
                 shapes = ButtonDefaults.shapes(
-                    shape = ConnectedScheduleLayout.shape(topStart = true, bottomStart = true),
-                    pressedShape = ConnectedScheduleLayout.shape(topStart = true, bottomStart = true, inner = 4.dp, outer = 22.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    pressedShape = RoundedCornerShape(12.dp)),
                 colors = controlColors,
                 contentPadding = PaddingValues(0.dp)) { Icon(vectorResource(Res.drawable.chevron_right_24px), "上一周", Modifier.rotate(180f)) }
             FilledTonalButton(onClick = onSelectWeek, modifier = Modifier.weight(1f).heightIn(min = 56.dp)
@@ -79,8 +80,8 @@ fun HbmuWeekHeader(weekTitle: String, firstDate: LocalDate, lastDate: LocalDate,
             }
             FilledTonalButton(onClick = onNext, modifier = Modifier.width(48.dp).fillMaxHeight(),
                 shapes = ButtonDefaults.shapes(
-                    shape = ConnectedScheduleLayout.shape(topEnd = true, bottomEnd = true),
-                    pressedShape = ConnectedScheduleLayout.shape(topEnd = true, bottomEnd = true, inner = 4.dp, outer = 22.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    pressedShape = RoundedCornerShape(12.dp)),
                 colors = controlColors,
                 contentPadding = PaddingValues(0.dp)) { Icon(vectorResource(Res.drawable.chevron_right_24px), "下一周") }
         }

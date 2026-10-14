@@ -32,12 +32,14 @@ import java.io.File
 fun main(args: Array<String>): Unit = runBlocking {
     startKoin<DesktopAppConfig>()
     val koin = GlobalContext.get()
+    // Baseline screenshots exercise the full configured week; hiding has dedicated cases below.
+    koin.get<StyleSettingsRepository>().setHideEmptyDays(false)
     val snapshot = System.getenv("HBMU_PREVIEW_SNAPSHOT")?.let { File(it) }
     if (snapshot != null) {
         val tables = koin.get<CourseTableRepository>()
         val table = tables.getAllCourseTables().first { it.isNotEmpty() }.first()
         val parsed = HbmuScheduleParser.parse(snapshot.readText())
-        koin.get<CourseConversionRepository>().importCourseTableFromJson(table.id, parsed.model)
+        koin.get<CourseConversionRepository>().importCourseTableFromJson(table.id, HbmuDefaultTimes.withCalibratedBaseline(parsed.model))
         val settings = koin.get<AppSettingsRepository>()
         settings.insertOrUpdateAppSettings(settings.getAppSettingsOnce().copy(currentCourseTableId = table.id))
         val hbmu = koin.get<HbmuRepository>()
@@ -117,6 +119,10 @@ fun main(args: Array<String>): Unit = runBlocking {
                     }
                 }
                 if (name == "week") {
+                    fun texts(node: SemanticsNode): List<String> =
+                        node.config.getOrNull(SemanticsProperties.Text).orEmpty().map { it.text } + node.children.flatMap { texts(it) }
+                    val renderedTexts = scene.semanticsOwners.flatMap { texts(it.rootSemanticsNode) }
+                    check("08:40" in renderedTexts && "14:30" in renderedTexts) { "Calibrated local times must reach the visible grid" }
                     val theme = if (dark) "dark" else "light"
                     recordWeekLayout(scene, "week-$theme")
                     val initialBodyTop = verticalScroller(scene).boundsInRoot.top
@@ -180,6 +186,57 @@ fun main(args: Array<String>): Unit = runBlocking {
         settle(largeTextScene)
         capture(largeTextScene, "week-large-text-light")
         largeTextScene.close()
+        if (snapshot != null) {
+            val parsed = HbmuScheduleParser.parse(snapshot.readText())
+            val calibratedModel = HbmuDefaultTimes.withCalibratedBaseline(parsed.model)
+            val sparse = calibratedModel.copy(courses = calibratedModel.courses.filter { it.day in setOf(1, 3, 5) })
+            val conversion = koin.get<CourseConversionRepository>()
+            fun visibleDateCount(scene: ImageComposeScene): Int {
+                fun count(node: SemanticsNode): Int =
+                    (if (node.boundsInRoot.width > 0f && node.boundsInRoot.height > 0f &&
+                        node.config.getOrNull(SemanticsProperties.ContentDescription)?.any { it.startsWith("课表日期：") } == true) 1 else 0) + node.children.sumOf { count(it) }
+                return scene.semanticsOwners.sumOf { count(it.rootSemanticsNode) }
+            }
+            try {
+                conversion.importCourseTableFromJson(tableId, sparse)
+                styles.setHideEmptyDays(true)
+                for (dark in listOf(false, true)) {
+                    val theme = if (dark) "dark" else "light"
+                    val scene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
+                        ShiguangScheduleTheme(darkTheme = dark, dynamicColor = false) {
+                            Surface(Modifier.fillMaxSize()) { AppNavigation(Destination.CourseSchedule) }
+                        }
+                    }
+                    settle(scene)
+                    check(visibleDateCount(scene) == 3) { "Sparse week must display exactly three dates" }
+                    capture(scene, "week-hidden-$theme")
+                    fun findLongClick(node: SemanticsNode): SemanticsNode? {
+                        if (node.boundsInRoot.width > 0f && node.boundsInRoot.height > 0f &&
+                            node.config.getOrNull(SemanticsActions.OnLongClick)?.action != null) return node
+                        return node.children.firstNotNullOfOrNull { findLongClick(it) }
+                    }
+                    val editable = scene.semanticsOwners.firstNotNullOfOrNull { findLongClick(it.rootSemanticsNode) }
+                        ?: error("Visible course must remain editable with hidden days")
+                    check(editable.config.getOrNull(SemanticsActions.OnLongClick)?.action?.invoke() == true)
+                    settle(scene)
+                    check(visibleDateCount(scene) == 5) { "Editing must reveal empty days as move targets" }
+                    capture(scene, "week-editing-$theme")
+                    click(scene, "上一周")
+                    settle(scene)
+                    check(visibleDateCount(scene) == 0) { "Empty week must hide all date columns" }
+                    capture(scene, "week-empty-$theme")
+                    click(scene, "显示完整一周")
+                    settle(scene)
+                    check(visibleDateCount(scene) == 5) { "Empty week must allow restoring the grid for new courses" }
+                    capture(scene, "week-empty-restored-$theme")
+                    scene.close()
+                }
+                println("Timetable QA: hidden days, editing targets, empty week, restoration passed in both themes")
+            } finally {
+                conversion.importCourseTableFromJson(tableId, calibratedModel)
+                styles.setHideEmptyDays(false)
+            }
+        }
         File(output, "week-layout-check.csv").writeText("name,body_top,control,left,top,right,bottom\n" + weekLayouts.joinToString("\n"))
         // Exercise the actual navigation controls, including the reverse direction.
         val navigationScene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {

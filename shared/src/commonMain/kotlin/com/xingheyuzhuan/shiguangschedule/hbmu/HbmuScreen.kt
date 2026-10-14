@@ -212,16 +212,7 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                     }
                 }
             }
-            item {
-                Column(Modifier.padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("课表之外", style = MaterialTheme.typography.titleMedium)
-                    Text("课程编辑、提醒、小组件、备份和其他学校导入，都在工具与设置中。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    FilledTonalButton(onClick = { onNavigate(Destination.Settings) }) {
-                        Icon(vectorResource(Res.drawable.tune_24px), null); Spacer(Modifier.width(8.dp)); Text("工具与设置")
-                    }
-                    Text("上课起止时间随课表自动同步，今日课程、提醒和小组件使用同一份学校时间。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
+
         }
     }
     if (showSignOut) AlertDialog(onDismissRequest = { showSignOut = false }, title = { Text("退出教务账号？") },

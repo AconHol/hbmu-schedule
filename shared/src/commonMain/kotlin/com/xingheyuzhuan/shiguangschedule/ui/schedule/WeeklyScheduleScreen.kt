@@ -286,7 +286,8 @@ fun WeeklyScheduleScreen(
                         showWeekends = uiState.showWeekends,
                         todayIndex = pageTodayIndex,
                         firstDayOfWeek = uiState.firstDayOfWeek,
-                        currentSectionIndex = if (pageTodayIndex >= 0) uiState.currentSectionIndex else -1
+                        currentSectionIndex = if (pageTodayIndex >= 0) uiState.currentSectionIndex else -1,
+                        revealEmptyDays = floatingCourse != null
                     )
                 }
 

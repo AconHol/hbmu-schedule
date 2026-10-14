@@ -1,6 +1,9 @@
 // Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.schedule.components
 
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -88,7 +91,8 @@ data class ScheduleGridViewState(
     val showWeekends: Boolean,
     val todayIndex: Int,
     val firstDayOfWeek: Int,
-    val currentSectionIndex: Int = -1
+    val currentSectionIndex: Int = -1,
+    val revealEmptyDays: Boolean = false
 )
 
 /**
@@ -174,7 +178,7 @@ fun DayHeader(
         }
         displayDays.forEachIndexed { index, day ->
             val selected = index == todayIndex
-            Box(Modifier.weight(1f).padding(start = ConnectedScheduleLayout.HalfGap,
+            Box(Modifier.weight(1f).semantics { contentDescription = "课表日期：$day ${dates.getOrNull(index).orEmpty()}" }.padding(start = ConnectedScheduleLayout.HalfGap,
                 end = if (index == displayDays.lastIndex) 0.dp else ConnectedScheduleLayout.HalfGap,
                 bottom = ConnectedScheduleLayout.HalfGap), contentAlignment = Alignment.Center) {
                 androidx.compose.material3.Surface(
@@ -370,11 +374,12 @@ fun TimeText(text: String, color: Color) {
 fun calculateSingleSchedulables(
     mergedCourses: List<MergedCourseBlock>,
     firstDayOfWeek: Int,
-    showWeekends: Boolean
+    showWeekends: Boolean,
+    displayDays: List<Int> = (0 until if (showWeekends) 7 else 5).map { mapDisplayIndexToDay(it, firstDayOfWeek) }
 ): List<ISingleSchedulable> {
     val list = mutableListOf<ISingleSchedulable>()
     mergedCourses.forEach { block ->
-        val displayIdx = mapDayToDisplayIndex(block.day, firstDayOfWeek, showWeekends)
+        val displayIdx = displayDays.indexOf(block.day)
         if (displayIdx != -1) {
             val layoutInfo = block.nonActiveRanges.firstOrNull() ?: (0f to 1f)
             block.courses.firstOrNull()?.let { course ->

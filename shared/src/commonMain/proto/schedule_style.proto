@@ -101,4 +101,5 @@ message ScheduleGridStyleProto {
   optional string background_image_path = 19 [deprecated = true];
 
   optional WidgetStyleProto widget_style = 28;   // 小组件样式配置
+  optional bool hide_empty_days = 29; // 自动隐藏当前页面没有课程的日期列
 }

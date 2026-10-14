@@ -41,6 +41,9 @@ object HbmuCalendarParser {
                 val row = value.jsonObject
                 fun field(key: String) = (row[key] as? JsonPrimitive)?.contentOrNull.orEmpty().trim()
                 if (field("lx") != "kb") return@rowLoop
+                // The calendar also labels multi-day activities as kb, with no weekday or periods.
+                // Do not let those activities invalidate genuine dated lessons.
+                if (field("jcdm").isBlank() && field("xq").isBlank()) return@rowLoop
                 val date = LocalDate.parse(field("qsrq").take(10)).toString()
                 require(field("jsrq").take(10) == date) { "课程跨日时间异常，已保留本地课表" }
                 val key = Key(date, field("kcmc"), periods(field("jcdm")))

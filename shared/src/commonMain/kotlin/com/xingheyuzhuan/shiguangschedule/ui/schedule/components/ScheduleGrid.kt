@@ -5,6 +5,8 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -17,6 +19,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -31,6 +39,8 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
@@ -41,13 +51,16 @@ import androidx.compose.ui.zIndex
 import com.xingheyuzhuan.shiguangschedule.data.model.schedule_style.ScheduleModeProto
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringArrayResource
+import org.jetbrains.compose.resources.vectorResource
 import shiguangschedule.shared.generated.resources.Res
 import shiguangschedule.shared.generated.resources.week_days_short_names
+import shiguangschedule.shared.generated.resources.calendar_today_24px
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
 @Suppress("COMPOSE_APPLIER_CALL_MISMATCH")
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun ScheduleGrid(
     state: ScheduleGridState,
     viewState: ScheduleGridViewState,
@@ -58,8 +71,8 @@ fun ScheduleGrid(
     BoxWithConstraints(modifier.fillMaxSize().padding(horizontal = ConnectedScheduleLayout.PageMargin)) {
         val density = LocalDensity.current
         val horizontalScroll = rememberScrollState()
-        val minimumDayWidth = (if (viewState.showWeekends) 36.dp else 48.dp) * maxOf(density.fontScale, style.fontScale, 1f)
-        val contentWidth = maxOf(maxWidth, minimumDayWidth * (if (viewState.showWeekends) 7 else 5) + style.timeColumnWidth)
+        var showFullWeek by remember(viewState.dates, style.hideEmptyDays) { mutableStateOf(false) }
+        val navigationBottom = com.xingheyuzhuan.shiguangschedule.ui.components.LocalNavigationContentBottom.current
 
         LaunchedEffect(viewState.mergedCourses) {
             state.resetAllStates()
@@ -70,9 +83,32 @@ fun ScheduleGrid(
         val pageSubTextColor = pageTextColor.copy(alpha = 0.7f)
         val weekDays = stringArrayResource(Res.array.week_days_short_names).toList()
         val reorderedWeekDays = rearrangeDays(weekDays, viewState.firstDayOfWeek)
-        val displayDays = if (viewState.showWeekends) reorderedWeekDays else reorderedWeekDays.take(5)
+        val dayNumbers = scheduleDisplayedDays(viewState.firstDayOfWeek, viewState.showWeekends, style.hideEmptyDays,
+            viewState.mergedCourses.map { it.day }.toSet(),
+            revealEmptyDays = showFullWeek || viewState.revealEmptyDays || state.expandedItem != null)
+        val originalIndices = dayNumbers.map { mapDayToDisplayIndex(it, viewState.firstDayOfWeek, true) }
+        val displayDays = originalIndices.map { reorderedWeekDays[it] }
+        val displayDates = originalIndices.map { viewState.dates.getOrNull(it).orEmpty() }
+        val todayColumnIndex = originalIndices.indexOf(viewState.todayIndex)
+
+        if (dayNumbers.isEmpty()) {
+            Box(Modifier.fillMaxSize().padding(bottom = navigationBottom), contentAlignment = Alignment.Center) {
+                Column(Modifier.padding(horizontal = 24.dp), horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Icon(vectorResource(Res.drawable.calendar_today_24px), null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
+                    Text("这一周暂无课程", style = MaterialTheme.typography.titleLarge)
+                    Text("可以切换周次，或显示完整一周添加课程", style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                    FilledTonalButton(onClick = { showFullWeek = true }, shapes = ButtonDefaults.shapes(),
+                        modifier = Modifier.semantics { contentDescription = "显示完整一周" }) { Text("显示完整一周") }
+                }
+            }
+            return@BoxWithConstraints
+        }
 
         val displayDaysCount = displayDays.size
+        val minimumDayWidth = (if (displayDaysCount > 5) 36.dp else 48.dp) * maxOf(density.fontScale, style.fontScale, 1f)
+        val contentWidth = maxOf(maxWidth, minimumDayWidth * displayDaysCount + style.timeColumnWidth)
         val is24HourMode = style.scheduleMode == ScheduleModeProto.TIME_24H_MODE
         val maxGridSections = if (is24HourMode) 24 else viewState.timeSlots.size
 
@@ -81,11 +117,10 @@ fun ScheduleGrid(
         val columnColor = MaterialTheme.colorScheme.surfaceContainerLow
         val todayColumnColor = androidx.compose.ui.graphics.lerp(columnColor, MaterialTheme.colorScheme.primaryContainer, .35f)
         val cellPadding = style.courseBlockOuterPadding.coerceIn(ConnectedScheduleLayout.HalfGap, 6.dp)
-        val navigationBottom = com.xingheyuzhuan.shiguangschedule.ui.components.LocalNavigationContentBottom.current
         val navigationBottomPx = with(density) { navigationBottom.toPx() }
 
-        val singleSchedulables = remember(viewState.mergedCourses, viewState.firstDayOfWeek, viewState.showWeekends) {
-            calculateSingleSchedulables(viewState.mergedCourses, viewState.firstDayOfWeek, viewState.showWeekends)
+        val singleSchedulables = remember(viewState.mergedCourses, dayNumbers) {
+            calculateSingleSchedulables(viewState.mergedCourses, viewState.firstDayOfWeek, viewState.showWeekends, dayNumbers)
         }
         val sectionHeightPx = with(density) { style.sectionHeight.toPx() }
 
@@ -187,7 +222,7 @@ fun ScheduleGrid(
         }
 
         Column(Modifier.fillMaxSize().horizontalScroll(horizontalScroll).width(contentWidth)) {
-            DayHeader(style, displayDays, viewState.dates, viewState.currentYear, viewState.todayIndex, pageTextColor, pageSubTextColor)
+            DayHeader(style, displayDays, displayDates, viewState.currentYear, todayColumnIndex, pageTextColor, pageSubTextColor)
 
             Row(
                 modifier = Modifier
@@ -212,7 +247,7 @@ fun ScheduleGrid(
                 Layout(
                     content = {
                         singleSchedulables.forEach { item ->
-                            val isExpanded = state.expandedItem != null && state.expandedItem?.parentBlock === item.parentBlock
+                            val isExpanded = state.expandedItem?.courseWrapper?.course?.id == item.courseWrapper.course.id
 
                             Box(
                                 modifier = Modifier
@@ -276,7 +311,7 @@ fun ScheduleGrid(
                                                             } else {
                                                                 val deltaCols = (state.bodyDragOffsetX / cellWidth).roundToInt()
                                                                 val targetDisplayIdx = (item.columnIndex + deltaCols).coerceIn(0, displayDaysCount - 1)
-                                                                val targetDay = mapDisplayIndexToDay(targetDisplayIdx, viewState.firstDayOfWeek)
+                                                                val targetDay = dayNumbers[targetDisplayIdx]
                                                                 var targetStart = intent.initialStartSection + (state.bodyDragOffsetY / sectionHeightPx)
                                                                 targetStart = if (is24HourMode) (targetStart / 0.25f).roundToInt() * 0.25f else targetStart.roundToInt().toFloat()
                                                                 targetStart = targetStart.coerceIn(0f, maxGridSections - intent.duration)
@@ -398,13 +433,13 @@ fun ScheduleGrid(
                                     val outline = ConnectedScheduleLayout.shape(bottomEnd = lastDay && lastSection)
                                         .createOutline(cellSize, layoutDirection, this)
                                     translate(day * cellWidth + gutter, section * sectionHeightPx + gutter) {
-                                        drawOutline(outline, if (day == viewState.todayIndex) todayColumnColor else columnColor)
+                                        drawOutline(outline, if (day == todayColumnIndex) todayColumnColor else columnColor)
                                         if (!style.hideGridLines) drawOutline(outline, gridLineColor, style = Stroke(.5.dp.toPx()))
                                     }
                                 }
                             }
                         }
-                        .pointerInput(displayDaysCount, sectionHeightPx, viewState.firstDayOfWeek, maxGridSections, is24HourMode, state.expandedItem) {
+                        .pointerInput(dayNumbers, sectionHeightPx, viewState.firstDayOfWeek, maxGridSections, is24HourMode, state.expandedItem) {
                             detectTapGestures { offset ->
                                 if (state.expandedItem != null) {
                                     state.expandedItem = null
@@ -413,7 +448,7 @@ fun ScheduleGrid(
                                 }
                                 val dayIdx = (offset.x / (size.width / displayDaysCount)).toInt().coerceIn(0, displayDaysCount - 1)
                                 val secIdx = (offset.y / sectionHeightPx).toInt().coerceIn(0, maxGridSections - 1)
-                                actions.onGridCellClicked(mapDisplayIndexToDay(dayIdx, viewState.firstDayOfWeek), if (is24HourMode) secIdx else (secIdx + 1))
+                                actions.onGridCellClicked(dayNumbers[dayIdx], if (is24HourMode) secIdx else (secIdx + 1))
                             }
                         }
                 ) { measurables, constraints ->
@@ -422,7 +457,7 @@ fun ScheduleGrid(
 
                     val placeables = measurables.mapIndexed { index, measurable ->
                         val item = singleSchedulables[index]
-                        val isExpanded = state.expandedItem != null && state.expandedItem?.parentBlock === item.parentBlock
+                        val isExpanded = state.expandedItem?.courseWrapper?.course?.id == item.courseWrapper.course.id
 
                         val originalHeightPx = ((item.endSection - item.startSection) * sectionHeightPx).toInt()
 
@@ -446,8 +481,8 @@ fun ScheduleGrid(
                     layout(constraints.maxWidth, constraints.maxHeight) {
                         placeables.forEachIndexed { index, placeable ->
                             val item = singleSchedulables[index]
-                            val isExpanded = state.expandedItem != null && state.expandedItem?.parentBlock === item.parentBlock
-                            val isMoving = state.activeMoveIntent != null && state.activeMoveIntent?.parentBlock === item.parentBlock
+                            val isExpanded = state.expandedItem?.courseWrapper?.course?.id == item.courseWrapper.course.id
+                            val isMoving = state.activeMoveIntent?.parentBlock?.courses?.any { it.course.id == item.courseWrapper.course.id } == true
 
                             val originalX = item.columnIndex * cellWidth + (if (isExpanded) 0 else item.subColumnIndex * (cellWidth / item.subColumnCount))
                             val originalY = (item.startSection * sectionHeightPx).toInt()

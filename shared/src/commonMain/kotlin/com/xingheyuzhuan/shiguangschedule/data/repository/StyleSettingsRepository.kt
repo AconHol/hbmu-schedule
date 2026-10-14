@@ -188,6 +188,11 @@ class StyleSettingsRepository(
         it.copy(hide_date_under_day = hide)
     }
 
+    /** 设置是否自动隐藏无课日期 */
+    suspend fun setHideEmptyDays(hide: Boolean) = updateStyle {
+        it.copy(hide_empty_days = hide)
+    }
+
     /** 设置是否隐藏网格线 */
     suspend fun setHideGridLines(hide: Boolean) = updateStyle {
         it.copy(hide_grid_lines = hide)

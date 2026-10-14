@@ -7,6 +7,7 @@ import com.xingheyuzhuan.shiguangschedule.data.repository.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -161,11 +162,24 @@ class HbmuRepository(
             if (database.courseTableDao().getCourseTableById(tableId) == null) {
                 database.courseTableDao().insert(CourseTable(tableId, "HBMU · $semester", Clock.System.now().toEpochMilliseconds()))
                 timeSchedules.saveExclusiveTimeTable(
-                    TimeTable(id = tableId, name = null, createdAt = Clock.System.now().toEpochMilliseconds()),
+                    TimeTable(id = tableId, name = null, createdAt = Clock.System.now().toEpochMilliseconds(), defaultClassDuration = 40),
                     defaultTimeSlots.map { it.copy(timeTableId = tableId) }
                 )
             }
-            conversion.importCourseTableFromJson(tableId, timedModel)
+            // Only migrate the old untouched fallback. User-edited slots and public bindings remain intact.
+            val existingSlots = database.timeSlotDao().getTimeSlotsOnceByTimeTableId(tableId)
+            val existingTimeTable = timeSchedules.getTimeTableById(tableId).first()
+            val importModel = if (HbmuDefaultTimes.shouldReplaceLegacy(existingSlots)) {
+                HbmuDefaultTimes.withCalibratedBaseline(timedModel)
+            } else timedModel.copy(config = timedModel.config?.copy(
+                defaultClassDuration = existingTimeTable?.defaultClassDuration ?: 40,
+                defaultBreakDuration = existingTimeTable?.defaultBreakDuration ?: 10
+            ))
+            // Academic sync replaces lessons and baseline data, keeping any user's public/combo binding.
+            conversion.importCourses(tableId, importModel.courses)
+            conversion.importTimeSlots(tableId, importModel.timeSlots.orEmpty(),
+                importModel.config?.defaultClassDuration, importModel.config?.defaultBreakDuration)
+            importModel.config?.let { conversion.importCourseConfig(tableId, it) }
             val config = settings.getCourseConfigOnce(tableId) ?: CourseTableConfig(tableId)
             settings.insertOrUpdateCourseConfig(config.copy(showWeekends = parsed.hasWeekends))
         }

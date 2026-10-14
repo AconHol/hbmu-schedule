@@ -49,4 +49,16 @@ class HbmuCalendarParserTest {
     @Test fun detectsExpiredCalendarSession() {
         assertFailsWith<HbmuSessionExpired> { HbmuCalendarParser.applyTimes(model(), listOf("<html>login</html>")) }
     }
+    @Test fun multiDayActivitiesWithNoPeriodsDoNotAbortLessonSync() {
+        val activity = """{"lx":"kb","qsrq":"2026-10-05","jsrq":"2026-10-25","qssj":"08:00:00","jssj":"22:30:00","jcdm":"","xq":""}"""
+        assertEquals("08:00", HbmuCalendarParser.applyTimes(model(), listOf("[$activity,${event()}]")).courses.single().customStartTime)
+    }
+    @Test fun genuineCrossDayLessonsStillFailSafely() {
+        val crossDay = event().replace("\"jsrq\":\"2026-10-08\"", "\"jsrq\":\"2026-10-09\"")
+        assertFailsWith<IllegalArgumentException> { HbmuCalendarParser.applyTimes(model(), listOf("[$crossDay]")) }
+    }
+    @Test fun missingPeriodsWithAWeekdayAreNotTreatedAsActivities() {
+        val broken = event(periods = "").replace("\"lx\":\"kb\"", "\"lx\":\"kb\",\"xq\":\"4\"")
+        assertFails { HbmuCalendarParser.applyTimes(model(), listOf("[${event()},$broken]")) }
+    }
 }

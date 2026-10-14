@@ -232,6 +232,7 @@ fun SettingsListContent(
         StyleSwitchItem(stringResource(Res.string.label_hide_section_time), currentStyle.hideSectionTime) { viewModel.updateHideSectionTime(it) }
         StyleSwitchItem(stringResource(Res.string.label_hide_date_under_day), currentStyle.hideDateUnderDay) { viewModel.updateHideDateUnderDay(it) }
         StyleSwitchItem(label = stringResource(Res.string.label_hide_grid_lines), checked = currentStyle.hideGridLines) { viewModel.updateHideGridLines(it) }
+        StyleSwitchItem(label = "自动隐藏无课日期", checked = currentStyle.hideEmptyDays) { viewModel.updateHideEmptyDays(it) }
         ColorPickerItem(
             label = stringResource(Res.string.label_page_text_color),
             currentColor = currentStyle.pageTextColor,
