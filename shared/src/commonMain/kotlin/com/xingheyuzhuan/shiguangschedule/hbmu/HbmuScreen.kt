@@ -46,13 +46,13 @@ fun HbmuBrandHeader(title: String, subtitle: String, onTools: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = koinInject()) {
     val state by repository.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     var account by remember(state.account) { mutableStateOf(state.account) }
-    var password by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf(repository.rememberedPassword()) }
     var code by remember { mutableStateOf("") }
     var visiblePassword by remember { mutableStateOf(false) }
     var rememberLogin by remember(state.remember) { mutableStateOf(state.remember) }
@@ -60,8 +60,11 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
     var termMenu by remember { mutableStateOf(false) }
     var showLogin by remember { mutableStateOf(!state.signedIn) }
     var showSignOut by remember { mutableStateOf(false) }
-    LaunchedEffect(state.signedIn) { showLogin = !state.signedIn }
-    LaunchedEffect(state.captcha) { code = state.captcha?.recognized.orEmpty() }
+    LaunchedEffect(state.signedIn, state.requiresManualCaptcha) { showLogin = !state.signedIn || state.requiresManualCaptcha }
+    LaunchedEffect(state.captcha, state.requiresManualCaptcha) { code = "" }
+    LaunchedEffect(showLogin, state.remember, account) {
+        if (showLogin && state.remember && account == state.account && password.isBlank()) password = repository.rememberedPassword()
+    }
 
     Scaffold(contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)) { padding ->
         LazyColumn(
@@ -95,7 +98,10 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                             Text("上次同步 ${date.date} ${date.hour.toString().padStart(2, '0')}:${date.minute.toString().padStart(2, '0')} · ${state.recordCount} 次排课",
                                 style = MaterialTheme.typography.labelMedium)
                         }
-                        if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+                        if (state.busy) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            LoadingIndicator(Modifier.size(36.dp))
+                            Text(state.message, style = MaterialTheme.typography.bodyMedium)
+                        }
                         if (state.signedIn && state.busy) Text(state.message, style = MaterialTheme.typography.bodySmall)
                     }
                 }
@@ -128,7 +134,7 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                             val year = state.semester.take(4).toIntOrNull()
                             Text(if (year != null) "$year—${year + 1} 学年 · ${if (state.semester.endsWith("01")) "第一" else "第二"}学期" else "同步后读取学校学期", style = MaterialTheme.typography.bodyLarge)
                         }
-                        Button(onClick = { scope.launch { repository.sync() } }, enabled = !state.busy && state.account.isNotBlank(), modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                        Button(onClick = { scope.launch { repository.sync() } }, shapes = ButtonDefaults.shapes(), enabled = !state.busy && state.account.isNotBlank(), modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
                             Icon(vectorResource(Res.drawable.refresh_24px), null); Spacer(Modifier.width(8.dp)); Text("同步整学期课表")
                         }
                     }
@@ -138,33 +144,39 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                 Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                     Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Text("登录教务", style = MaterialTheme.typography.titleLarge)
-                        OutlinedTextField(account, { account = it.trim() }, label = { Text("学号") }, singleLine = true, enabled = !state.busy,
+                        OutlinedTextField(account, { value ->
+                            if (value.trim() != account) { password = ""; code = "" }
+                            account = value.trim()
+                        }, label = { Text("学号") }, singleLine = true, enabled = !state.busy,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text), modifier = Modifier.fillMaxWidth())
                         OutlinedTextField(password, { password = it }, label = { Text("教务密码") }, singleLine = true, enabled = !state.busy,
                             visualTransformation = if (visiblePassword) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), modifier = Modifier.fillMaxWidth(),
                             trailingIcon = { TextButton(onClick = { visiblePassword = !visiblePassword }) { Text(if (visiblePassword) "隐藏" else "显示") } })
-                        AnimatedVisibility(state.captcha != null) {
+                        AnimatedVisibility(state.requiresManualCaptcha && state.captcha != null) {
                             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                     state.captcha?.let { HbmuCaptchaImage(it.bytes, Modifier.size(120.dp, 48.dp)) }
                                     TextButton(onClick = { scope.launch { repository.refreshCaptcha() } }, enabled = !state.busy) { Text("换一张") }
                                 }
-                                OutlinedTextField(code, { code = it.take(4) }, label = { Text("验证码（可修正识别结果）") }, singleLine = true, enabled = !state.busy, modifier = Modifier.fillMaxWidth())
+                                OutlinedTextField(code, { code = it.filter { char -> char.isLetterOrDigit() }.take(4) }, label = { Text("请输入图中的验证码") }, singleLine = true, enabled = !state.busy, modifier = Modifier.fillMaxWidth())
                             }
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(checked = rememberLogin, onCheckedChange = { rememberLogin = it }, enabled = !state.busy)
-                            Text("保持登录与自动重登", style = MaterialTheme.typography.bodyMedium)
+                            Checkbox(checked = rememberLogin, onCheckedChange = {
+                                rememberLogin = it
+                                scope.launch { repository.updatePreferences(it, state.autoSync) }
+                            }, enabled = !state.busy)
+                            Text("自动保存密码并保持登录", style = MaterialTheme.typography.bodyMedium)
                         }
-                        Button(onClick = { scope.launch {
-                            repository.signIn(account, password, code, rememberLogin, autoSync)
+                        Button(shapes = ButtonDefaults.shapes(), onClick = { scope.launch {
+                            repository.signIn(account, password, if (state.requiresManualCaptcha) code else "", rememberLogin, autoSync)
                             if (repository.uiState.value.signedIn) { password = ""; showLogin = false }
-                        } }, enabled = !state.busy && account.isNotBlank() && password.isNotBlank(), modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-                            Text(if (code.isBlank()) "自动识别验证码并登录" else "登录并同步课表")
+                        } }, enabled = !state.busy && account.isNotBlank() && password.isNotBlank() && (!state.requiresManualCaptcha || code.length == 4), modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                            Text(if (!state.requiresManualCaptcha) "自动识别验证码并登录" else "登录并同步课表")
                         }
-                        TextButton(onClick = { scope.launch { repository.refreshCaptcha() } }, enabled = !state.busy, modifier = Modifier.fillMaxWidth()) { Text("获取验证码 / 手动登录") }
-                        Text("账号、密码与会话仅加密保存在本机。验证码离线识别，识别失败可手动填写。",
+                        TextButton(onClick = { if (state.requiresManualCaptcha) repository.useAutomaticCaptcha() else scope.launch { repository.refreshCaptcha() } }, enabled = !state.busy, modifier = Modifier.fillMaxWidth()) { Text(if (state.requiresManualCaptcha) "改用自动识别" else "手动填写验证码") }
+                        Text("密码加密保存在本机，下次自动填入。验证码识别错误会自动换图，连续三次错误后转为手动输入。",
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
@@ -174,7 +186,7 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                     Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text("账号偏好", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Column(Modifier.weight(1f)) { Text("保持登录"); Text("会话失效时自动重新登录", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                            Column(Modifier.weight(1f)) { Text("保存密码与保持登录"); Text("本机加密保存，会话失效时自动重新登录；关闭后移除已保存密码", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                             Switch(state.remember, { scope.launch { repository.updatePreferences(it, state.autoSync) } }, enabled = !state.busy)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -204,7 +216,7 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
                     FilledTonalButton(onClick = { onNavigate(Destination.Settings) }) {
                         Icon(vectorResource(Res.drawable.tune_24px), null); Spacer(Modifier.width(8.dp)); Text("工具与设置")
                     }
-                    Text("节次时间可在“作息管理”中按学校安排校准。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("上课起止时间随课表自动同步，今日课程、提醒和小组件使用同一份学校时间。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

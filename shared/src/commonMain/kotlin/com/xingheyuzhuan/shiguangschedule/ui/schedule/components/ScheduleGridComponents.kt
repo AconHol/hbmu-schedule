@@ -207,7 +207,8 @@ fun TimeColumn(
     subTextColor: Color,
     strokeWidthPx: Float,
     activeDragHour: Int? = null,
-    activeDragMinuteStr: String? = null
+    activeDragMinuteStr: String? = null,
+    showClockTimes: Boolean = true
 ) {
     val currentHour = remember {
         try {
@@ -278,7 +279,7 @@ fun TimeColumn(
                                 color = textColor,
                                 overflow = TextOverflow.Ellipsis
                             )
-                            if (!style.hideSectionTime) {
+                            if (!style.hideSectionTime && showClockTimes) {
                                 when {
                                     h >= 52.dp -> {
                                         Spacer(Modifier.height(2.dp))

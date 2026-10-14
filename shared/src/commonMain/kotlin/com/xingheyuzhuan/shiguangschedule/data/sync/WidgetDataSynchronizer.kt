@@ -241,7 +241,7 @@ class WidgetDataSynchronizer(
                     val endTime: String
 
                     // 处理自定义时间或标准时间段
-                    if (course.isCustomTime) {
+                    if (course.customStartTime != null && course.customEndTime != null) {
                         startTime = course.customStartTime ?: ""
                         endTime = course.customEndTime ?: ""
                     } else {

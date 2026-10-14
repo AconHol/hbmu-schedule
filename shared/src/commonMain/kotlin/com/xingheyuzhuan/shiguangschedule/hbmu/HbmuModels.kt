@@ -54,6 +54,7 @@ data class HbmuState(
     val message: String = "登录湖北医药学院教务系统，课表随时可看",
     val error: String? = null,
     val captcha: HbmuCaptcha? = null,
+    val requiresManualCaptcha: Boolean = false,
     val lastSync: Long = 0,
     val recordCount: Int = 0
 )
@@ -70,6 +71,7 @@ interface HbmuGateway {
     suspend fun terms(): List<HbmuTerm>
     fun displayName(): String = ""
     suspend fun courses(semester: String, rows: Int): String
+    suspend fun calendar(startDate: String, endDateExclusive: String): String
 }
 
 expect fun createHbmuGateway(): HbmuGateway

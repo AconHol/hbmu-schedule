@@ -1,6 +1,10 @@
 // Modified by AconHol (2026): HBMU course-schedule learning project; upstream attribution retained.
 package com.xingheyuzhuan.shiguangschedule.ui.settings
 
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.Surface
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -177,6 +181,14 @@ fun SettingsScreen(
                     bottom = 88.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp
                 )
             ) {
+                item {
+                    Card(onClick = { onNavigate(Destination.ThemeSettings) }, modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.extraLarge,
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+                        ListItem(headlineContent = { Text("主题与颜色") }, supportingContent = { Text("壁纸动态取色 · 自定义主色 · 深浅色模式") },
+                            trailingContent = { Icon(vectorResource(Res.drawable.chevron_right_24px), null) },
+                            colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent))
+                    }
+                }
                 item {
                     GeneralSettingsSection(
                         showNonCurrentWeek = appSettings.showNonCurrentWeekCourses,
@@ -483,19 +495,16 @@ private fun SettingItem(
     onClick: (() -> Unit)? = null,
     trailingContent: @Composable () -> Unit = { Icon(icon, contentDescription = null) }
 ) {
-    Row(
+    Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainer) {
+    ListItem(
+        headlineContent = { Text(title, style = MaterialTheme.typography.bodyLarge) },
+        supportingContent = { Text(subtitle, style = MaterialTheme.typography.bodySmall) },
+        trailingContent = trailingContent,
+        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = onClick != null) { onClick?.invoke() }
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        trailingContent()
+    )
     }
 }
 

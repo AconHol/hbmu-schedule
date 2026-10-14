@@ -75,7 +75,7 @@ object IcsExportTool {
 
                 val startTime: LocalTime
                 val endTime: LocalTime
-                if (course.isCustomTime) {
+                if (course.customStartTime != null && course.customEndTime != null) {
                     val s = course.customStartTime ?: return@forEach
                     val e = course.customEndTime ?: return@forEach
                     try {

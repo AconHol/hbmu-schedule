@@ -119,7 +119,7 @@ object CourseMergeUtils {
             try {
                 val c = cw.course
 
-                val (sTime, eTime) = if (c.isCustomTime) {
+                val (sTime, eTime) = if (c.isCustomTime || (mode == ScheduleModeProto.TIME_24H_MODE && c.customStartTime != null && c.customEndTime != null)) {
                     LocalTime.parse(c.customStartTime ?: return@mapNotNull null) to
                             LocalTime.parse(c.customEndTime ?: return@mapNotNull null)
                 } else {

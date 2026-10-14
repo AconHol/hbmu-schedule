@@ -162,6 +162,14 @@ internal class AndroidHbmuGateway(private val context: Context) : HbmuGateway {
         if (body.trimStart().startsWith("<")) throw HbmuSessionExpired()
         body
     }
+
+    override suspend fun calendar(startDate: String, endDateExclusive: String): String = withContext(Dispatchers.IO) {
+        kotlinx.datetime.LocalDate.parse(startDate)
+        kotlinx.datetime.LocalDate.parse(endDateExclusive)
+        val body = request("/default!getCalendar.action", mapOf("d1" to "$startDate 00:00:00", "d2" to "$endDateExclusive 00:00:00")).toString(Charsets.UTF_8)
+        if (body.trimStart().startsWith("<")) throw HbmuSessionExpired()
+        body
+    }
 }
 
 /** Restricted ddddocr CTC head + INT8 weights in ORT format. Inference stays on the device. */

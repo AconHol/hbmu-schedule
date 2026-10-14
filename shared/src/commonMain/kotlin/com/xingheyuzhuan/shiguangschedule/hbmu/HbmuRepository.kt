@@ -33,6 +33,7 @@ class HbmuRepository(
         displayName = saved.displayName, signedIn = saved.signedIn || (saved.account.isNotBlank() && saved.lastSync > 0)
     ))
     val uiState = state.asStateFlow()
+    fun rememberedPassword(): String = if (saved.remember && saved.account == state.value.account) saved.password else ""
 
     private fun defaultSemester(): String {
         val date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -51,38 +52,42 @@ class HbmuRepository(
     }
 
     suspend fun refreshCaptcha() = operation {
-        state.update { it.copy(message = "正在获取并识别验证码…") }
-        val captcha = gateway.captcha()
-        state.update { it.copy(captcha = captcha, message = if (captcha.recognized.length == 4) "验证码已在本机识别，可直接登录" else "可手动填写验证码后登录") }
+        state.update { it.copy(requiresManualCaptcha = true, message = "正在获取验证码…") }
+        val captcha = gateway.captcha().copy(recognized = "")
+        state.update { it.copy(captcha = captcha, message = "请输入图片中的四位数字或小写字母") }
     }
+
+    fun useAutomaticCaptcha() { state.update { it.copy(requiresManualCaptcha = false, captcha = null, error = null) } }
 
     suspend fun signIn(account: String, password: String, code: String, remember: Boolean, autoSync: Boolean) = operation {
         require(account.isNotBlank() && password.isNotBlank()) { "请填写学号和教务密码" }
-        activePassword = password
+        if (account.trim() != state.value.account) activePassword = ""
         state.update { it.copy(account = account.trim(), remember = remember, autoSync = autoSync, connected = false, signedIn = false, displayName = "", message = "正在登录教务系统…") }
-        if (code.isBlank()) automaticLogin(account.trim(), password)
-        else gateway.login(account.trim(), password, code.trim())
-        state.update { it.copy(connected = true, signedIn = true, captcha = null) }
+        if (!state.value.requiresManualCaptcha) automaticLogin(account.trim(), password)
+        else {
+            require(code.matches(Regex("[0-9a-zA-Z]{4}"))) { "请填写四位验证码" }
+            try { gateway.login(account.trim(), password, code.trim()) }
+            catch (e: HbmuLoginException) {
+                if (e.captchaError) {
+                    val fresh = gateway.captcha().copy(recognized = "")
+                    state.update { it.copy(captcha = fresh) }
+                }
+                throw e
+            }
+        }
+        activePassword = password
+        state.update { it.copy(connected = true, signedIn = true, captcha = null, requiresManualCaptcha = false) }
         persist()
         loadTerms()
         syncInternal()
     }
 
     private suspend fun automaticLogin(account: String, password: String) {
-        repeat(3) { attempt ->
-            state.update { it.copy(message = "自动识别验证码并登录（${attempt + 1}/3）…") }
-            val captcha = gateway.captcha()
-            state.update { it.copy(captcha = captcha) }
-            if (!captcha.recognized.matches(Regex("[A-Za-z0-9]{4}"))) return@repeat
-            try {
-                gateway.login(account, password, captcha.recognized)
-                state.update { it.copy(connected = true, captcha = null) }
-                return
-            } catch (e: HbmuLoginException) {
-                if (!e.captchaError) throw e
-            }
-        }
-        throw HbmuLoginException("自动识别未通过，请手动填写验证码再登录", true)
+        state.update { it.copy(requiresManualCaptcha = false) }
+        HbmuLoginFlow(gateway).automatic(account, password,
+            onAttempt = { attempt -> state.update { it.copy(message = "自动识别验证码并登录（$attempt/3）…") } },
+            onCaptcha = { captcha, manual -> state.update { it.copy(captcha = captcha, requiresManualCaptcha = manual) } })
+        state.update { it.copy(connected = true, captcha = null, requiresManualCaptcha = false) }
     }
 
     private suspend fun loadTerms() {
@@ -132,6 +137,25 @@ class HbmuRepository(
             .let { (it as kotlinx.serialization.json.JsonPrimitive).content.toInt() } }.getOrDefault(-1)
         if (total in 1001..10000) body = gateway.courses(semester, total)
         val parsed = HbmuScheduleParser.parse(body)
+        state.update { it.copy(message = "正在同步学校上课时间…") }
+        val calendar = mutableListOf<String>()
+        parsed.model.config?.semesterStartDate?.let { start ->
+            val first = kotlinx.datetime.LocalDate.parse(start)
+            val finalDay = first.toEpochDays() + (parsed.model.config?.semesterTotalWeeks ?: 20) * 7L
+            var cursor = first.toEpochDays()
+            while (cursor < finalDay) {
+                val end = minOf(cursor + 28L, finalDay)
+                val date1 = kotlinx.datetime.LocalDate.fromEpochDays(cursor).toString()
+                val date2 = kotlinx.datetime.LocalDate.fromEpochDays(end).toString()
+                calendar += try { gateway.calendar(date1, date2) } catch (e: HbmuSessionExpired) {
+                    require(state.value.remember && activePassword.isNotBlank()) { "登录已过期，请重新登录" }
+                    automaticLogin(state.value.account, activePassword)
+                    gateway.calendar(date1, date2)
+                }
+                cursor = end
+            }
+        }
+        val timedModel = HbmuCalendarParser.applyTimes(parsed.model, calendar)
         val tableId = "hbmu-${state.value.account}-$semester"
         database.withWriteTransaction {
             if (database.courseTableDao().getCourseTableById(tableId) == null) {
@@ -141,14 +165,14 @@ class HbmuRepository(
                     defaultTimeSlots.map { it.copy(timeTableId = tableId) }
                 )
             }
-            conversion.importCourseTableFromJson(tableId, parsed.model)
+            conversion.importCourseTableFromJson(tableId, timedModel)
             val config = settings.getCourseConfigOnce(tableId) ?: CourseTableConfig(tableId)
             settings.insertOrUpdateCourseConfig(config.copy(showWeekends = parsed.hasWeekends))
         }
         val app = settings.getAppSettingsOnce()
         settings.insertOrUpdateAppSettings(app.copy(currentCourseTableId = tableId))
         state.update { it.copy(connected = true, signedIn = true, lastSync = Clock.System.now().toEpochMilliseconds(),
-            recordCount = parsed.total, message = "已同步 ${parsed.total} 次排课，可离线查看", captcha = null) }
+            recordCount = parsed.total, message = "已同步 ${parsed.total} 次排课及学校上课时间", captcha = null) }
         persist()
     }
 
@@ -168,7 +192,7 @@ class HbmuRepository(
         activePassword = ""
         saved = HbmuSavedAccount(remember = state.value.remember, autoSync = state.value.autoSync, semester = state.value.semester)
         gateway.saveAccount(saved)
-        state.update { it.copy(account = "", connected = false, signedIn = false, displayName = "", captcha = null, error = null, message = "已退出登录，本地课表仍可查看") }
+        state.update { it.copy(account = "", connected = false, signedIn = false, displayName = "", captcha = null, requiresManualCaptcha = false, error = null, message = "已退出登录，本地课表仍可查看") }
     }
 
     private fun persist() {

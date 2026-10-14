@@ -113,7 +113,7 @@ fun CourseDetailBottomSheet(
         rawCoursesList.map { wrapper ->
             val course = wrapper.course
             val dayStr = weekDaysFullNames.getOrNull(course.day - 1) ?: ""
-            val timeStr = if (course.isCustomTime) {
+            val timeStr = if (course.customStartTime != null && course.customEndTime != null) {
                 "${course.customStartTime} - ${course.customEndTime}"
             } else {
                 "${course.startSection ?: 0}-${course.endSection ?: 0} $sectionSuffix"

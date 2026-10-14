@@ -196,10 +196,13 @@ fun ScheduleGrid(
                     style = style, timeSlots = viewState.timeSlots, maxGridSections = maxGridSections,
                     is24HourMode = is24HourMode, onTimeSlotClicked = { actions.onTimeSlotClicked() },
                     modifier = Modifier.height(totalGridHeight), lineColor = gridLineColor,
-                    currentSectionIndex = viewState.currentSectionIndex, textColor = pageTextColor,
+                    currentSectionIndex = if (viewState.mergedCourses.any { block -> block.courses.any { !it.course.isCustomTime && it.course.customStartTime != null } }) -1 else viewState.currentSectionIndex, textColor = pageTextColor,
                     subTextColor = pageSubTextColor, strokeWidthPx = strokeWidthPx,
                     activeDragHour = activeDragHour,
-                    activeDragMinuteStr = activeDragMinuteStr
+                    activeDragMinuteStr = activeDragMinuteStr,
+                    showClockTimes = viewState.mergedCourses.none { block -> block.courses.any {
+                        !it.course.isCustomTime && it.course.customStartTime != null && it.course.customEndTime != null
+                    } }
                 )
 
                 Layout(

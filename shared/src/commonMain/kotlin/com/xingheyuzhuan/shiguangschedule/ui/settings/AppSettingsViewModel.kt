@@ -189,6 +189,18 @@ class SettingsViewModel(
         }
     }
 
+    fun onCustomPrimaryChanged(color: Color? = null) {
+        viewModelScope.launch {
+            val current = appSettingsRepository.getAppSettingsOnce()
+            val defaults = AppSettingsModel().customPrimaryColor
+            val value = color?.toArgb()?.toLong()
+            appSettingsRepository.insertOrUpdateAppSettings(current.copy(
+                useDynamicColor = false,
+                customPrimaryColor = com.xingheyuzhuan.shiguangschedule.data.model.LightDarkValue(value ?: defaults.light, value ?: defaults.dark)
+            ))
+        }
+    }
+
     /**
      * 自定义浅色模式种子色（传 Color 则修改，传 null 则重置）
      */
