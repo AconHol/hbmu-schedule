@@ -48,6 +48,7 @@ fun main(args: Array<String>): Unit = runBlocking {
     }
     val output = File(System.getenv("HBMU_PREVIEW_OUTPUT") ?: "build/hbmu-preview").apply { mkdirs() }
     withContext(Dispatchers.Main) {
+        val weekLayouts = mutableListOf<String>()
         suspend fun settle(scene: ImageComposeScene) {
             repeat(8) { scene.render(System.nanoTime()).close(); delay(100) }
         }
@@ -78,6 +79,29 @@ fun main(args: Array<String>): Unit = runBlocking {
             }
             println("Timetable QA: scroll=${range.value()}/${range.maxValue()}, bottom=$toBottom")
         }
+        fun actionNode(scene: ImageComposeScene, label: String): SemanticsNode {
+            fun hasLabel(node: SemanticsNode): Boolean =
+                node.config.getOrNull(SemanticsProperties.ContentDescription)?.contains(label) == true || node.children.any { hasLabel(it) }
+            fun find(node: SemanticsNode): SemanticsNode? {
+                if (node.boundsInRoot.width > 0f && node.boundsInRoot.height > 0f &&
+                    node.config.getOrNull(SemanticsActions.OnClick)?.action != null && hasLabel(node)) return node
+                return node.children.firstNotNullOfOrNull { find(it) }
+            }
+            return scene.semanticsOwners.firstNotNullOfOrNull { find(it.rootSemanticsNode) }
+                ?: error("Visible action missing: $label")
+        }
+        fun click(scene: ImageComposeScene, label: String) {
+            val position = actionNode(scene, label).boundsInRoot.center
+            scene.sendPointerEvent(PointerEventType.Press, position)
+            scene.sendPointerEvent(PointerEventType.Release, position)
+        }
+        fun recordWeekLayout(scene: ImageComposeScene, name: String) {
+            val bodyTop = verticalScroller(scene).boundsInRoot.top
+            for (label in listOf("上一周", "下一周", "选择周次", "回到本周", "切换课表", "课表设置")) {
+                val bounds = actionNode(scene, label).boundsInRoot
+                weekLayouts.add("$name,$bodyTop,$label,${bounds.left},${bounds.top},${bounds.right},${bounds.bottom}")
+            }
+        }
         for ((name, destination) in listOf("today" to Destination.TodaySchedule, "week" to Destination.CourseSchedule, "academic" to Destination.Hbmu, "tools" to Destination.Settings,
             "contributors" to Destination.ContributionList, "theme" to Destination.ThemeSettings, "about" to Destination.MoreOptions)) {
             for (dark in listOf(false, true)) {
@@ -94,26 +118,25 @@ fun main(args: Array<String>): Unit = runBlocking {
                 }
                 if (name == "week") {
                     val theme = if (dark) "dark" else "light"
+                    recordWeekLayout(scene, "week-$theme")
+                    val initialBodyTop = verticalScroller(scene).boundsInRoot.top
                     scrollGrid(scene, toBottom = true)
                     capture(scene, "week-bottom-$theme")
                     scrollGrid(scene, toBottom = false)
-                    scene.sendPointerEvent(PointerEventType.Press, Offset(88f, 184f))
-                    scene.sendPointerEvent(PointerEventType.Release, Offset(88f, 184f))
+                    click(scene, "上一周")
                     settle(scene)
+                    check(verticalScroller(scene).boundsInRoot.top == initialBodyTop) { "Changing weeks must not shift the timetable" }
+                    recordWeekLayout(scene, "week-previous-$theme")
                     capture(scene, "week-previous-$theme")
-                    scene.sendPointerEvent(PointerEventType.Press, Offset(632f, 184f))
-                    scene.sendPointerEvent(PointerEventType.Release, Offset(632f, 184f))
+                    click(scene, "下一周")
                     settle(scene)
                     capture(scene, "week-returned-$theme")
-                    scene.sendPointerEvent(PointerEventType.Press, Offset(88f, 184f))
-                    scene.sendPointerEvent(PointerEventType.Release, Offset(88f, 184f))
+                    click(scene, "上一周")
                     settle(scene)
-                    scene.sendPointerEvent(PointerEventType.Press, Offset(610f, 300f))
-                    scene.sendPointerEvent(PointerEventType.Release, Offset(610f, 300f))
+                    click(scene, "回到本周")
                     settle(scene)
                     capture(scene, "week-today-$theme")
-                    scene.sendPointerEvent(PointerEventType.Press, Offset(360f, 184f))
-                    scene.sendPointerEvent(PointerEventType.Release, Offset(360f, 184f))
+                    click(scene, "选择周次")
                     settle(scene)
                     capture(scene, "week-selector-$theme")
                 }
@@ -144,6 +167,20 @@ fun main(args: Array<String>): Unit = runBlocking {
             if (tableConfig != null) settings.insertOrUpdateCourseConfig(tableConfig)
             styles.setScheduleMode(originalStyle.scheduleMode)
         }
+        val largeTextScene = ImageComposeScene(width = 720, height = 1600, density = Density(2f, fontScale = 1.6f), coroutineContext = coroutineContext) {
+            ShiguangScheduleTheme(darkTheme = false, dynamicColor = false) {
+                Surface(Modifier.fillMaxSize()) { AppNavigation(Destination.CourseSchedule) }
+            }
+        }
+        settle(largeTextScene)
+        recordWeekLayout(largeTextScene, "week-large-text-light")
+        click(largeTextScene, "上一周")
+        settle(largeTextScene)
+        click(largeTextScene, "回到本周")
+        settle(largeTextScene)
+        capture(largeTextScene, "week-large-text-light")
+        largeTextScene.close()
+        File(output, "week-layout-check.csv").writeText("name,body_top,control,left,top,right,bottom\n" + weekLayouts.joinToString("\n"))
         // Exercise the actual navigation controls, including the reverse direction.
         val navigationScene = ImageComposeScene(width = 720, height = 1600, density = Density(2f), coroutineContext = coroutineContext) {
             ShiguangScheduleTheme(darkTheme = false, dynamicColor = false) {
