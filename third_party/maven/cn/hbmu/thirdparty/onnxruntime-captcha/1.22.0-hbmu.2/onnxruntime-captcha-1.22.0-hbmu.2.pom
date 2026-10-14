@@ -3,10 +3,10 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>cn.hbmu.thirdparty</groupId>
   <artifactId>onnxruntime-captcha</artifactId>
-  <version>1.22.0-hbmu.1</version>
+  <version>1.22.0-hbmu.2</version>
   <packaging>aar</packaging>
   <name>ONNX Runtime CPU minimal build for offline captcha</name>
-  <description>ONNX Runtime 1.22.0 with model-specific operator and type reduction, packaged by AconHol. Upstream Java API and JNI retained.</description>
+  <description>ONNX Runtime 1.22.0 with model-specific operator and type reduction, packaged by AconHol. Upstream Java API retained. JNI rebuilt to match CPU-only runtime.</description>
   <url>https://github.com/microsoft/onnxruntime</url>
   <licenses>
     <license><name>MIT License</name><url>https://opensource.org/licenses/MIT</url><distribution>repo</distribution></license>

@@ -125,7 +125,9 @@ internal class AndroidHbmuGateway(private val context: Context) : HbmuGateway {
     override suspend fun captcha(): HbmuCaptcha = withContext(Dispatchers.IO) {
         request("/") // establish the same server-side session as the captcha and login
         val bytes = request("/yzm?d=${System.currentTimeMillis()}")
-        val recognized = runCatching { ocr.recognize(bytes) }.getOrDefault("")
+        val recognized = runCatching { ocr.recognize(bytes) }
+            .onFailure { android.util.Log.w("HBMU_OCR", "Offline captcha recognition failed", it) }
+            .getOrDefault("")
         HbmuCaptcha(bytes, recognized)
     }
 

@@ -12,6 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.xingheyuzhuan.shiguangschedule.Destination
+import com.xingheyuzhuan.shiguangschedule.ui.components.LocalNavigationContentBottom
+import com.xingheyuzhuan.shiguangschedule.ui.components.connectedCourseShape
 import com.xingheyuzhuan.shiguangschedule.hbmu.HbmuBrandHeader
 import com.xingheyuzhuan.shiguangschedule.hbmu.HbmuRepository
 import kotlinx.coroutines.delay
@@ -39,8 +41,8 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     val state = uiState as? TodayUiState.Success
     val next = state?.courses?.firstOrNull { it.endTime == null || it.endTime!! >= time.toString().take(5) }
-    Scaffold { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding), verticalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(bottom = 112.dp)) {
+    Scaffold(contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)) { padding ->
+        LazyColumn(Modifier.fillMaxSize().padding(padding), verticalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(bottom = LocalNavigationContentBottom.current + 20.dp)) {
             item { HbmuBrandHeader("今日课表", "${today.month.ordinal + 1}月${today.day}日 · 星期${"一二三四五六日"[today.dayOfWeek.isoDayNumber - 1]}", { onNavigate(Destination.Settings) }) }
             item {
                 Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), shape = MaterialTheme.shapes.extraLarge, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
@@ -86,22 +88,27 @@ fun TodayScheduleScreen(onNavigate: (Destination) -> Unit, onBack: () -> Unit,
                     }
                 }
             }
-            items(state?.courses.orEmpty(), key = { it.course.id }) { model ->
+            item {
+                val courses = state?.courses.orEmpty()
+                Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                courses.forEachIndexed { index, model ->
                 val finished = model.endTime?.let { it < time.toString().take(5) } ?: false
-                Card(onClick = { detail = model }, modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), colors = CardDefaults.cardColors(containerColor = if (model == next) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerLow)) {
-                    Row(Modifier.padding(20.dp), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Surface(onClick = { detail = model }, modifier = Modifier.fillMaxWidth(), shape = connectedCourseShape(index, courses.size), color = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
+                    Row(Modifier.heightIn(min = 92.dp).padding(horizontal = 18.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Column(Modifier.width(60.dp)) {
                             Text(model.startTime ?: "待设置", style = MaterialTheme.typography.titleMedium)
                             Text(model.endTime ?: "", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(Modifier.height(8.dp))
-                            Text(if (finished) "已结束" else "第${model.course.startSection ?: ""}—${model.course.endSection ?: ""}节", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                            Text(if (finished) "已结束" else "第${model.course.startSection ?: ""}—${model.course.endSection ?: ""}节", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .72f))
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(model.course.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text(model.course.position.ifBlank { "教室待公布" }, style = MaterialTheme.typography.bodyMedium)
-                            if (model.course.teacher.isNotBlank()) Text(model.course.teacher, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(listOf(model.course.position.ifBlank { "教室待公布" }, model.course.teacher).filter { it.isNotBlank() }.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .78f))
                         }
+                        Icon(vectorResource(Res.drawable.chevron_right_24px), null, tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .70f))
                     }
+                }
+                }
                 }
             }
             item {

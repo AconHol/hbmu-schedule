@@ -1,5 +1,13 @@
 # 离线验证码模型优化
 
+## 2.2.2：修复 Android JNI 加载
+
+2.2.1 复用了完整官方包的 Android JNI，该 JNI 依赖 `OrtSessionOptionsAppendExecutionProvider_Nnapi`，而 CPU 最小运行时没有提供这个符号。Android 加载 JNI 时会解析该依赖，因而失败；Windows JNI 不依赖它，所以先前桌面测试没有暴露问题。
+
+2.2.2 从同一个 ORT 1.22.0 提交重新编译 CPU JNI，使用各架构核心实际生成的 `onnxruntime_config.h`，编译时用 `-Wl,-z,defs` 检查所有直接依赖；不再复用带 NNAPI 依赖的 JNI。三种架构的 JNI 只导入核心提供的 `OrtGetApiBase` 和 `OrtSessionOptionsAppendExecutionProvider_CPU`。新增 [链接依赖检查](tools/ocr/check_linkage.py)，防止再次打包不匹配的组合。
+
+模型、字表和原生推理核心保持 2.2.1 的压缩方案，约 5 MiB 模型及 1.2–2.2 MiB 核心。新取得的 32 张真实验证码，其预测结果与原通用模型一致；其中含人眼易混淆字符，所以这项比较不等同于宣称真实识别率 100%。Android 手机上的实际运行留待设备验证。
+
 2.2.1 将原 ddddocr 1.6.1 通用模型的输出范围缩减为数字、小写英文字母和 CTC 空白，共 37 个类别。模型与字表始终成对更新，保留原类别权重及空白、重复字符的解码规则。
 
 卷积权重使用逐输出通道 INT8 存储，计算时恢复为 float32；循环层和输出层使用动态 INT8。输入、卷积激活和输出分数仍为 float32。最终保存为 ORT 格式，APK 不再同时包含原通用模型。
@@ -22,7 +30,7 @@
 
 从 ONNX Runtime **v1.22.0** 的提交 `f217402897f40ebba457e2421bc0a4702771968e` 构建 CPU 最小运行时，仅保留 [模型实际需要的算子和类型](tools/ocr/required_operators.config)。关闭 ML 算子和 RTTI，保留异常处理。支持 `arm64-v8a`、`armeabi-v7a` 和 `x86_64`，使用 Android API 26 和 16 KiB ELF 页面对齐。
 
-自定义 AAR 使用同版本官方包的 Java API、JNI 和消费端 ProGuard 规则，仅替换原生推理核心。MIT 许可证及第三方通知随 AAR 保留。AAR 内的 `META-INF/hbmu-ort-build.json` 记录来源提交、原始 AAR 哈希以及每个原生库的哈希。应用仍保留 `ai.onnxruntime.**` 的 R8 规则。
+自定义 AAR 使用同版本官方包的 Java API 和消费端 ProGuard 规则，并重新编译与 CPU 核心匹配的 JNI。MIT 许可证及第三方通知随 AAR 保留。AAR 内的 `META-INF/hbmu-ort-build.json` 记录来源提交、原始 AAR 哈希以及每个原生库的哈希。应用仍保留 `ai.onnxruntime.**` 的 R8 规则。
 
 ## 复现
 
@@ -39,7 +47,7 @@ python tools/ocr/optimize_model.py common.onnx original-charset.json output
 使用官方 ORT v1.22.0 源码、同版本官方 Android AAR、CMake、Ninja 和 Android NDK 构建运行时：
 
 ```text
-python tools/ocr/build_runtime.py --source onnxruntime --sdk android-sdk --ndk android-ndk --cmake cmake --ops output/captcha.required_operators_and_types.config --official-aar onnxruntime-android-1.22.0.aar --build-dir build-ort --output third_party/maven/cn/hbmu/thirdparty/onnxruntime-captcha/1.22.0-hbmu.1/onnxruntime-captcha-1.22.0-hbmu.1.aar
+python tools/ocr/build_runtime.py --source onnxruntime --sdk android-sdk --ndk android-ndk --cmake cmake --ops output/captcha.required_operators_and_types.config --official-aar onnxruntime-android-1.22.0.aar --build-dir build-ort --output third_party/maven/cn/hbmu/thirdparty/onnxruntime-captcha/1.22.0-hbmu.2/onnxruntime-captcha-1.22.0-hbmu.2.aar
 ```
 
 路径应使用绝对路径。Windows 需要已安装 MSVC；脚本保留例外信息以便模型加载失败时退回手动输入。如果 Eigen 下载受阻，可通过 `--eigen-source` 指定从其官方镜像取得的相同源码提交 `1d8b82b0740839c0de7f1242a3585e3390ff5f33`。

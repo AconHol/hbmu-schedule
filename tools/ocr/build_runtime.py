@@ -1,10 +1,12 @@
-"""Build ORT 1.22 CPU kernels needed by captcha.ort, then reuse official JNI/Java.
+"""Build ORT 1.22 CPU kernels and matching CPU-only JNI needed by captcha.ort.
 
 Use the upstream v1.22.0 source at f217402897f40ebba457e2421bc0a4702771968e.
-The produced AAR retains the upstream Java API, JNI, licenses and consumer rules.
+The produced AAR retains the upstream Java API, licenses and consumer rules.
 """
 import argparse, hashlib, json, os, shutil, subprocess, sys, tempfile, zipfile
 from pathlib import Path
+from build_jni import build_cpu_jni
+from check_linkage import check
 
 ORT_COMMIT = "f217402897f40ebba457e2421bc0a4702771968e"
 OFFICIAL_AAR_SHA256 = "04a4617a9c797cf49225595e45b5546081cb34c86ac817581141577d3b7dbfe2"
@@ -36,6 +38,7 @@ def build(args):
             command.append("FETCHCONTENT_SOURCE_DIR_EIGEN3=" + str(args.eigen_source))
         subprocess.run(command, check=True)
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    jni = build_cpu_jni(args.source, args.ndk, args.build_dir, args.official_aar, args.java_bin)
     manifest = {"ort_version": "1.22.0", "source_commit": head,
                 "official_aar_sha256": hashlib.sha256(args.official_aar.read_bytes()).hexdigest(),
                 "model_format": "ORT", "exception_handling": True, "libraries": {}}
@@ -50,10 +53,14 @@ def build(args):
             subprocess.run([str(strip), "--strip-unneeded", str(library)], check=True)
             data = library.read_bytes()
             custom.writestr("jni/" + abi + "/libonnxruntime.so", data)
-            custom.writestr("jni/" + abi + "/libonnxruntime4j_jni.so", official.read("jni/" + abi + "/libonnxruntime4j_jni.so"))
-            manifest["libraries"][abi] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+            bridge = jni[abi].read_bytes()
+            custom.writestr("jni/" + abi + "/libonnxruntime4j_jni.so", bridge)
+            manifest["libraries"][abi] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+                                           "jni_cpu_only": True, "jni_sha256": hashlib.sha256(bridge).hexdigest()}
         custom.writestr("META-INF/hbmu-ort-build.json", json.dumps(manifest, indent=2))
     args.output.with_suffix(".aar.sha256").write_text(hashlib.sha256(args.output.read_bytes()).hexdigest() + "\n", encoding="utf-8")
+    nm = strip.with_name("llvm-nm.exe" if os.name == "nt" else "llvm-nm")
+    check(args.output, nm)
     print(json.dumps(manifest, indent=2))
 
 if __name__ == "__main__":
@@ -61,5 +68,6 @@ if __name__ == "__main__":
     for name in ["source", "sdk", "ndk", "cmake", "ops", "official-aar", "build-dir", "output"]:
         p.add_argument("--" + name, type=Path, required=True)
     p.add_argument("--eigen-source", type=Path)
+    p.add_argument("--java-bin", type=Path, default=Path(os.environ.get("JAVA_HOME", "")) / "bin")
     p.add_argument("--jobs", type=int, default=4)
     build(p.parse_args())

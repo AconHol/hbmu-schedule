@@ -190,7 +190,7 @@ fun ScheduleGrid(
                     .fillMaxSize()
                     .onSizeChanged { state.viewportHeightPx = it.height.toFloat() }
                     .verticalScroll(state = state.gridScrollState, enabled = state.expandedItem == null)
-                    .padding(bottom = com.xingheyuzhuan.shiguangschedule.ui.components.FloatingNavigationHeight)
+                    .padding(bottom = com.xingheyuzhuan.shiguangschedule.ui.components.LocalNavigationContentBottom.current)
             ) {
                 TimeColumn(
                     style = style, timeSlots = viewState.timeSlots, maxGridSections = maxGridSections,

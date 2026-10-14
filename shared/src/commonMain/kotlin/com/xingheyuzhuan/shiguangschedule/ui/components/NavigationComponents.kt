@@ -35,12 +35,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.xingheyuzhuan.shiguangschedule.Destination
 import dev.chrisbanes.haze.*
 import org.jetbrains.compose.resources.vectorResource
 import shiguangschedule.shared.generated.resources.*
 
 val FloatingNavigationHeight = 96.dp
+val LocalNavigationContentBottom = staticCompositionLocalOf<Dp> { 0.dp }
 
 fun mainTabIndex(destination: Destination): Int = when (destination) {
     Destination.TodaySchedule -> 0
@@ -62,7 +64,7 @@ fun mainTabDirection(first: Int, second: Int): Int {
 private data class NavItemData(val label: String, val destination: Destination, val selectedIcon: ImageVector, val icon: ImageVector)
 
 @Composable
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 fun AdaptiveNavigationScaffold(
     currentDestination: Destination,
     onTabSelected: (Destination) -> Unit,
@@ -97,9 +99,12 @@ fun AdaptiveNavigationScaffold(
                 Box(Modifier.weight(1f)) { content(PaddingValues(0.dp)) }
             }
         } else {
-            Box(Modifier.fillMaxSize().then(glass.source)) { content(PaddingValues(0.dp)) }
             val density = LocalDensity.current
             val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            val contentBottom = if (showNavigation && !keyboardOpen) FloatingNavigationHeight + bottomInset + 12.dp else 0.dp
+            CompositionLocalProvider(LocalNavigationContentBottom provides contentBottom) {
+                Box(Modifier.fillMaxSize().then(glass.source)) { content(PaddingValues(0.dp)) }
+            }
             val travel = with(density) { (FloatingNavigationHeight + bottomInset).toPx() }
             AnimatedVisibility(showNavigation && !keyboardOpen,
                 enter = slideInVertically { it } + fadeIn(), exit = slideOutVertically { it } + fadeOut(),
@@ -125,6 +130,7 @@ fun AdaptiveNavigationScaffold(
                         Box(Modifier.offset(x = capsuleOffset).width(tabWidth).fillMaxHeight()
                             .clip(CircleShape).background(colors.secondaryContainer.copy(alpha = .86f))
                             .border(1.dp, colors.onSecondaryContainer.copy(alpha = .08f), CircleShape))
+                        CompositionLocalProvider(LocalRippleConfiguration provides null) {
                         NavigationBar(containerColor = Color.Transparent, tonalElevation = 0.dp,
                             windowInsets = WindowInsets(0, 0, 0, 0), modifier = Modifier.fillMaxSize()
                                 .pointerInput(tabWidth, selectedIndex) {
@@ -158,6 +164,7 @@ fun AdaptiveNavigationScaffold(
                                         indicatorColor = Color.Transparent
                                     ))
                             }
+                        }
                         }
                     }
                 }

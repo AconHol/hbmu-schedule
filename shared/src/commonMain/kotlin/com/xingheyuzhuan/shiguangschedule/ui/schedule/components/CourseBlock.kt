@@ -62,10 +62,9 @@ fun CourseBlock(
 
     val currentAlpha = if (isFloating) 0.95f else style.courseBlockAlpha
     val accent = courseColorAdapted ?: fallbackColorAdapted
-    val blockColor = lerp(MaterialTheme.colorScheme.surfaceContainer, accent, .68f).copy(alpha = currentAlpha)
+    val blockColor = accent.copy(alpha = currentAlpha)
     val textColor = style.courseTextColor ?: MaterialTheme.colorScheme.onSurface
     val captionColor = style.courseTextColor ?: MaterialTheme.colorScheme.onSurfaceVariant
-    val railColor = MaterialTheme.colorScheme.primary.copy(alpha = .40f)
 
     // 字体大小
     val s13 = (12 * style.fontScale).sp
@@ -101,7 +100,7 @@ fun CourseBlock(
     val borderColor = if (isFloating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
     val borderWidth = if (isFloating) 2.dp else 1.dp
     val borderAlpha = if (isFloating) 1.0f else style.courseBlockAlpha
-    val shape = RoundedCornerShape(style.courseBlockCornerRadius.coerceAtMost(12.dp))
+    val shape = RoundedCornerShape(style.courseBlockCornerRadius)
 
     val borderModifier = when (style.borderType) {
         BorderTypeProto.BORDER_TYPE_SOLID -> {
@@ -141,16 +140,11 @@ fun CourseBlock(
             .then(borderModifier)
             .clip(shape)
             .background(color = blockColor)
-            .drawBehind {
-                drawRoundRect(railColor, topLeft = Offset(3.dp.toPx(), 9.dp.toPx()),
-                    size = androidx.compose.ui.geometry.Size(2.dp.toPx(), (size.height - 18.dp.toPx()).coerceAtLeast(0f)),
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(1.dp.toPx()))
-            }
     ) {
         val blockHeight = maxHeight
         // 课程文字内容容器
         Column(
-            modifier = Modifier.fillMaxSize().padding(start = style.courseBlockInnerPadding + 2.dp, end = style.courseBlockInnerPadding, top = style.courseBlockInnerPadding, bottom = style.courseBlockInnerPadding),
+            modifier = Modifier.fillMaxSize().padding(style.courseBlockInnerPadding),
             horizontalAlignment = horizontalAlignment,
             verticalArrangement = verticalArrangement
         ) {

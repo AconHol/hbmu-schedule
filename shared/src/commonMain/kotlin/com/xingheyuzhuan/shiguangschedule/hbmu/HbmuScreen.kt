@@ -63,11 +63,11 @@ fun HbmuScreen(onNavigate: (Destination) -> Unit, repository: HbmuRepository = k
     LaunchedEffect(state.signedIn) { showLogin = !state.signedIn }
     LaunchedEffect(state.captcha) { code = state.captcha?.recognized.orEmpty() }
 
-    Scaffold { padding ->
+    Scaffold(contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)) { padding ->
         LazyColumn(
             Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 112.dp)
+            contentPadding = PaddingValues(bottom = com.xingheyuzhuan.shiguangschedule.ui.components.LocalNavigationContentBottom.current + 20.dp)
         ) {
             item { HbmuBrandHeader("我的", "湖北医药学院 · 课表与账号", { onNavigate(Destination.Settings) }) }
             item {
