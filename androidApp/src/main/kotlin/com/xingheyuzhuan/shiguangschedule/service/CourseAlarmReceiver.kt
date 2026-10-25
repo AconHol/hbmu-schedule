@@ -12,10 +12,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.media.AudioManager
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.content.edit
 import androidx.core.content.getSystemService
 import com.xingheyuzhuan.shiguangschedule.MainActivity
 import com.xingheyuzhuan.shiguangschedule.R
@@ -25,6 +25,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.xingheyuzhuan.shiguangschedule.data.repository.AppSettingsRepository
+import com.xingheyuzhuan.shiguangschedule.data.repository.WidgetRepository
+import com.xingheyuzhuan.shiguangschedule.notifications.ReminderPlanner
+import kotlinx.coroutines.flow.first
+import kotlinx.datetime.TimeZone
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -34,6 +40,7 @@ import org.koin.core.component.inject
 class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
 
     private val appSettingsRepository: AppSettingsRepository by inject()
+    private val widgetRepository: WidgetRepository by inject()
 
     companion object {
         const val NOTIFICATION_CHANNEL_ID = "course_notification_channel"
@@ -43,6 +50,9 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
         const val EXTRA_COURSE_ID = "course_id"
         const val EXTRA_COURSE_START = "course_start"
         const val EXTRA_COURSE_END = "course_end"
+        const val EXTRA_COURSE_DATE = "course_date"
+        const val EXTRA_OCCURRENCE_KEY = "course_occurrence_key"
+        const val EXTRA_REMINDER_TRIGGER = "course_reminder_trigger"
 
         const val EXTRA_DND_ACTION = "extra_dnd_action"
         const val DND_ACTION_START = "dnd_action_start"
@@ -55,8 +65,7 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
 
         const val ACTION_DISMISS_NOTIFICATION = "com.xingheyuzhuan.shiguangschedule.ACTION_DISMISS_NOTIFICATION"
 
-        private const val ALARM_IDS_PREFS = "alarm_ids_prefs"
-        private const val KEY_ACTIVE_ALARM_IDS = "active_alarm_ids"
+        private const val NOTIFICATION_ID = 50010
         private const val TAG = "CourseAlarmReceiver"
 
         fun toggleMode(context: Context, enableMode: Boolean, modeType: AutoControlMode) {
@@ -85,7 +94,8 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
                 val notifyId = intent.getIntExtra("target_notification_id", -1)
                 if (notifyId != -1) {
                     val nm = ctx.getSystemService<NotificationManager>()
-                    nm?.cancel(notifyId)
+                    val tag = intent.getStringExtra("target_notification_tag")
+                    if (tag == null) nm?.cancel(notifyId) else nm?.cancel(tag, notifyId)
                 }
                 return
             }
@@ -115,20 +125,28 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
                         }
                     } else {
                         if (!appSettings.reminderEnabled) return@launch
-                        val courseName = intent?.getStringExtra(EXTRA_COURSE_NAME).takeUnless { it.isNullOrEmpty() }
-                            ?: ctx.getString(R.string.notification_unknown_course)
-
-                        val position = intent?.getStringExtra(EXTRA_COURSE_POSITION).takeUnless { it.isNullOrEmpty() }
-                            ?: ctx.getString(R.string.notification_unknown_position)
-                        val teacher = intent?.getStringExtra(EXTRA_COURSE_TEACHER) ?: ""
-                        val courseIdString = intent?.getStringExtra(EXTRA_COURSE_ID)
-
-                        if (!courseIdString.isNullOrEmpty()) {
-                            showNotification(ctx, slotId, courseName, position, teacher, isCompatMode,
-                                intent?.getStringExtra(EXTRA_COURSE_START).orEmpty(), intent?.getStringExtra(EXTRA_COURSE_END).orEmpty())
-                            removeAlarmIdFromPrefs(ctx, courseIdString)
-                            updateAllWidgets(ctx)
+                        if (intent?.action != CourseNotificationWorker.ACTION_COURSE || slotId !in 50010..SLOT_END) return@launch
+                        val date = intent.getStringExtra(EXTRA_COURSE_DATE)
+                        val key = intent.getStringExtra(EXTRA_OCCURRENCE_KEY)
+                        if (date.isNullOrBlank() || key.isNullOrBlank() || !intent.hasExtra(EXTRA_REMINDER_TRIGGER)) {
+                            // Replace pre-upgrade alarms instead of trusting their undated payloads.
+                            CourseNotificationWorker.enqueue(ctx)
+                            return@launch
                         }
+                        val zone = TimeZone.currentSystemDefault()
+                        val now = Clock.System.now()
+                        val event = widgetRepository.getWidgetCoursesByDateRange(date, date).first()
+                            .mapNotNull { ReminderPlanner.courseReminder(it, zone, appSettings.remindBeforeMinutes) }
+                            .firstOrNull { CourseReminderDelivery.key(it) == key } ?: return@launch
+                        if (event.trigger.toEpochMilliseconds() != intent.getLongExtra(EXTRA_REMINDER_TRIGGER, Long.MIN_VALUE) ||
+                            !ReminderPlanner.canDeliver(event, now, zone)) return@launch
+                        val delivered = CourseReminderDelivery.gate(ctx).deliverOnce(key, now.toEpochMilliseconds(),
+                            (event.trigger + 2.days).toEpochMilliseconds()) {
+                            val course = event.course
+                            showNotification(ctx, "course_$key", course.name, course.position, course.teacher,
+                                isCompatMode, course.startTime, course.endTime)
+                        }
+                        if (delivered) updateAllWidgets(ctx)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "onReceive 异常", e)
@@ -141,17 +159,17 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
 
     private fun showNotification(
         context: Context,
-        notificationId: Int,
+        notificationTag: String,
         name: String,
         position: String,
         teacher: String,
         isCompatMode: Boolean,
         startTime: String,
         endTime: String
-    ) {
-        val nm = context.getSystemService<NotificationManager>() ?: return
-        if (!nm.areNotificationsEnabled()) return
-        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
+    ): Boolean {
+        val nm = context.getSystemService<NotificationManager>() ?: return false
+        if (!nm.areNotificationsEnabled()) return false
+        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return false
 
         val alertTitle = context.getString(R.string.notification_title_course_alert)
         val closeActionText = context.getString(R.string.action_close)
@@ -180,13 +198,12 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
 
         val dismissIntent = Intent(context, CourseAlarmReceiver::class.java).apply {
             action = ACTION_DISMISS_NOTIFICATION
-            putExtra("target_notification_id", notificationId)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                identifier = notificationId.toString()
-            }
+            data = Uri.parse("hbmu-schedule://dismiss/$notificationTag")
+            putExtra("target_notification_id", NOTIFICATION_ID)
+            putExtra("target_notification_tag", notificationTag)
         }
         val dismissPI = PendingIntent.getBroadcast(
-            context, notificationId, dismissIntent,
+            context, NOTIFICATION_ID, dismissIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -208,6 +225,7 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
             .setTimeoutAfter(3 * 60 * 60 * 1000L)
 
             .setCategory(NotificationCompat.CATEGORY_EVENT)
+            .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setShowWhen(true)
             .addAction(0, closeActionText, dismissPI)
@@ -222,15 +240,7 @@ class CourseAlarmReceiver : BroadcastReceiver(), KoinComponent {
             builder.setRequestPromotedOngoing(true)
             builder.setShortCriticalText(liveStatusText)
         }
-        nm.notify(notificationId, builder.build())
-    }
-
-    private fun removeAlarmIdFromPrefs(context: Context, courseId: String) {
-        val sp = context.getSharedPreferences(ALARM_IDS_PREFS, Context.MODE_PRIVATE)
-        val currentIds = sp.getStringSet(KEY_ACTIVE_ALARM_IDS, null)?.toMutableSet()
-        if (currentIds != null) {
-            currentIds.remove(courseId)
-            sp.edit { putStringSet(KEY_ACTIVE_ALARM_IDS, currentIds) }
-        }
+        nm.notify(notificationTag, NOTIFICATION_ID, builder.build())
+        return true
     }
 }

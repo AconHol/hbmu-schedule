@@ -20,8 +20,8 @@ android {
         applicationId = "cn.hbmu.schedule"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 51
-        versionName = "2.4.1"
+        versionCode = 52
+        versionName = "2.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

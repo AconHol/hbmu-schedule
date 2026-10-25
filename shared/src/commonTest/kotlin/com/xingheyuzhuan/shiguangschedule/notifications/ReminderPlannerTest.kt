@@ -33,4 +33,51 @@ class ReminderPlannerTest {
         val row = course("one")
         assertEquals(1, ReminderPlanner.courses(listOf(row, row), Instant.parse("2026-10-13T00:00:00Z"), zone, 15).size)
     }
+
+    @Test fun reimportedRowsWithDifferentIdsProduceOneReminder() {
+        val original = course("old-id")
+        val imported = original.copy(id = "new-id", startTime = "08:00:00", endTime = "09:00:00")
+        val result = ReminderPlanner.courses(listOf(original, imported), Instant.parse("2026-10-13T00:00:00Z"), zone, 15)
+        assertEquals(1, result.size)
+        assertEquals(ReminderPlanner.occurrenceKey(original), ReminderPlanner.occurrenceKey(imported))
+    }
+
+    @Test fun differentOccurrencesAreNotLostWhenDatabaseIdsMatch() {
+        val row = course("same-id")
+        val nextDay = row.copy(date = "2026-10-15")
+        val nextTime = row.copy(startTime = "10:00", endTime = "11:00")
+        assertEquals(3, ReminderPlanner.courses(listOf(row, nextDay, nextTime),
+            Instant.parse("2026-10-13T00:00:00Z"), zone, 15).size)
+    }
+
+    @Test fun distinctCoursesAtTheSameTimeRemainSeparate() {
+        val row = course("one")
+        val otherCourse = row.copy(id = "two", name = "另一门课程")
+        val otherRoom = row.copy(id = "three", position = "另一间教室")
+        assertEquals(3, ReminderPlanner.courses(listOf(row, otherCourse, otherRoom),
+            Instant.parse("2026-10-13T00:00:00Z"), zone, 15).size)
+    }
+
+    @Test fun deliveryRejectsEarlyAndExpiredAlarmsButAllowsInexactDelay() {
+        val event = assertNotNull(ReminderPlanner.courseReminder(course("one"), zone, 15))
+        assertFalse(ReminderPlanner.canDeliver(event, Instant.parse("2026-10-13T23:44:59Z"), zone))
+        assertTrue(ReminderPlanner.canDeliver(event, Instant.parse("2026-10-13T23:45:00Z"), zone))
+        assertTrue(ReminderPlanner.canDeliver(event, Instant.parse("2026-10-14T00:05:00Z"), zone))
+        assertFalse(ReminderPlanner.canDeliver(event, Instant.parse("2026-10-14T01:00:00Z"), zone))
+        assertFalse(ReminderPlanner.canDeliver(event, Instant.parse("2026-10-15T00:00:00Z"), zone))
+    }
+
+    @Test fun midnightLessonCanBeRemindedOnPreviousDate() {
+        val row = course("midnight", start = "00:10").copy(endTime = "01:00")
+        val event = assertNotNull(ReminderPlanner.courseReminder(row, zone, 15))
+        assertTrue(ReminderPlanner.canDeliver(event, Instant.parse("2026-10-13T15:55:00Z"), zone))
+    }
+
+    @Test fun cancelledAndMalformedLessonsCannotBeDelivered() {
+        val event = assertNotNull(ReminderPlanner.courseReminder(course("one"), zone, 15))
+        val now = Instant.parse("2026-10-14T00:05:00Z")
+        assertFalse(ReminderPlanner.canDeliver(event.copy(course = event.course.copy(isSkipped = true)), now, zone))
+        assertFalse(ReminderPlanner.canDeliver(event.copy(course = event.course.copy(endTime = "bad")), now, zone))
+        assertFalse(ReminderPlanner.canDeliver(event.copy(course = event.course.copy(endTime = "07:00")), now, zone))
+    }
 }

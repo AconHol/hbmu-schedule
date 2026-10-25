@@ -2,9 +2,6 @@ package com.xingheyuzhuan.shiguangschedule.data.sync
 
 import android.content.Context
 import android.util.Log
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.xingheyuzhuan.shiguangschedule.data.repository.StyleSettingsRepository
 import com.xingheyuzhuan.shiguangschedule.service.CourseNotificationWorker
 import com.xingheyuzhuan.shiguangschedule.service.DndSchedulerWorker
@@ -58,11 +55,6 @@ class SyncManager(
     }
 
     private fun triggerNotificationWorker() {
-        val workRequest = OneTimeWorkRequestBuilder<CourseNotificationWorker>().build()
-        WorkManager.getInstance(appContext).enqueueUniqueWork(
-            "CourseNotificationWorker_Sync_Update",
-            ExistingWorkPolicy.REPLACE,
-            workRequest
-        )
+        CourseNotificationWorker.enqueue(appContext)
     }
 }

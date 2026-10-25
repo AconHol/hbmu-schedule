@@ -14,7 +14,11 @@ import com.xingheyuzhuan.shiguangschedule.data.repository.WidgetRepository
 import com.xingheyuzhuan.shiguangschedule.data.sync.WidgetDataSynchronizer
 import com.xingheyuzhuan.shiguangschedule.notifications.ReminderPlanner
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
 import org.koin.android.annotation.KoinWorker
 import java.time.LocalDate
@@ -30,9 +34,13 @@ class CourseNotificationWorker(
 ) : CoroutineWorker(context, params) {
     private val alarms = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    override suspend fun doWork(): Result = try {
-        cancelSlots(CourseAlarmReceiver::class.java, ACTION_COURSE, 50010, 101)
-        cancelSlots(SchedulePreviewReceiver::class.java, ACTION_PREVIEW, 50200, 7)
+    override suspend fun doWork(): Result = schedulingMutex.withLock {
+        try { rebuildAlarms() }
+        catch (e: CancellationException) { throw e }
+        catch (e: Exception) { Log.e("CourseNotifications", "Unable to schedule course notifications", e); Result.retry() }
+    }
+
+    private suspend fun rebuildAlarms(): Result {
         val settings = settingsRepository.getAppSettingsOnce()
         if ((settings.reminderEnabled || settings.schedulePreviewEnabled) && NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()) {
             // Rebuild date-specific data on boot and periodic refresh, even if the app was closed.
@@ -41,10 +49,22 @@ class CourseNotificationWorker(
             val courses = widgetRepository.getWidgetCoursesByDateRange(today.toString(), today.plusDays(7).toString()).first()
             val now = Clock.System.now()
             val zone = TimeZone.currentSystemDefault()
-            if (settings.reminderEnabled) ReminderPlanner.courses(courses, now, zone, settings.remindBeforeMinutes).take(101).forEachIndexed { index, event ->
+            val deliveries = CourseReminderDelivery.gate(applicationContext)
+            val reminders = if (settings.reminderEnabled) ReminderPlanner.courses(courses, now, zone, settings.remindBeforeMinutes)
+                .filterNot { deliveries.wasDelivered(CourseReminderDelivery.key(it), now.toEpochMilliseconds()) }.take(101) else emptyList()
+            val previews = if (settings.schedulePreviewEnabled) ReminderPlanner.previews(courses, now, zone, settings.schedulePreviewHour).take(7) else emptyList()
+            // Periodic refresh and foreground/sync refresh use different WorkManager names.
+            // Serialize their complete cancel/register phase and stop replaced workers promptly.
+            currentCoroutineContext().ensureActive()
+            cancelAllSlots()
+            reminders.forEachIndexed { index, event ->
+                currentCoroutineContext().ensureActive()
                 val slot = 50010 + index
                 val intent = Intent(applicationContext, CourseAlarmReceiver::class.java).apply {
                     action = ACTION_COURSE
+                    putExtra(CourseAlarmReceiver.EXTRA_COURSE_DATE, event.course.date)
+                    putExtra(CourseAlarmReceiver.EXTRA_OCCURRENCE_KEY, CourseReminderDelivery.key(event))
+                    putExtra(CourseAlarmReceiver.EXTRA_REMINDER_TRIGGER, event.trigger.toEpochMilliseconds())
                     putExtra(CourseAlarmReceiver.EXTRA_ALARM_SLOT_ID, slot)
                     putExtra(CourseAlarmReceiver.EXTRA_COURSE_ID, event.course.id)
                     putExtra(CourseAlarmReceiver.EXTRA_COURSE_NAME, event.course.name)
@@ -55,17 +75,25 @@ class CourseNotificationWorker(
                 }
                 setAlarm(slot, event.trigger.toEpochMilliseconds(), intent)
             }
-            if (settings.schedulePreviewEnabled) ReminderPlanner.previews(courses, now, zone, settings.schedulePreviewHour).take(7).forEachIndexed { index, event ->
+            previews.forEachIndexed { index, event ->
+                currentCoroutineContext().ensureActive()
                 val intent = Intent(applicationContext, SchedulePreviewReceiver::class.java).apply {
                     action = ACTION_PREVIEW
                     putExtra("date", event.date.toString())
                 }
                 setAlarm(50200 + index, event.trigger.toEpochMilliseconds(), intent)
             }
+        } else {
+            currentCoroutineContext().ensureActive()
+            cancelAllSlots()
         }
-        Result.success()
-    } catch (e: CancellationException) { throw e }
-    catch (e: Exception) { Log.e("CourseNotifications", "Unable to schedule course notifications", e); Result.retry() }
+        return Result.success()
+    }
+
+    private fun cancelAllSlots() {
+        cancelSlots(CourseAlarmReceiver::class.java, ACTION_COURSE, 50010, 101)
+        cancelSlots(SchedulePreviewReceiver::class.java, ACTION_PREVIEW, 50200, 7)
+    }
 
     private fun setAlarm(slot: Int, at: Long, intent: Intent) {
         val pending = PendingIntent.getBroadcast(applicationContext, slot, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -85,6 +113,7 @@ class CourseNotificationWorker(
     }
 
     companion object {
+        private val schedulingMutex = Mutex()
         const val ACTION_COURSE = "com.xingheyuzhuan.shiguangschedule.ACTION_COURSE_REMIND"
         const val ACTION_PREVIEW = "cn.hbmu.schedule.ACTION_SCHEDULE_PREVIEW"
         fun enqueue(context: Context) {

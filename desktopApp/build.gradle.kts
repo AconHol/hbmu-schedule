@@ -14,7 +14,7 @@ kotlin {
     jvmToolchain(21)
 }
 
-val appVersion = "2.4.1"
+val appVersion = "2.4.2"
 val appBaseName = "shiguangschedule"
 
 dependencies {
